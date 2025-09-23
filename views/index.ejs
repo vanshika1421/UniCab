@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Campus Rides</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7fa; margin: 0; padding: 0; }
+    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 32px; }
+    h1 { color: #2a3d66; }
+    ul { list-style: none; padding: 0; }
+    li { background: #e9f0fa; margin: 8px 0; padding: 12px; border-radius: 5px; }
+    .nav { margin-bottom: 20px; }
+    .nav a { margin-right: 12px; text-decoration: none; color: #2a3d66; font-weight: bold; }
+    .nav span { color: #2a3d66; }
+    .btn { background: #2a3d66; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; }
+    .btn[disabled] { background: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <% if (user) { %>
+        <span>Welcome, <%= user %>!</span>
+        <a href="/add">Add Ride</a>
+        <a href="/mybookings">My Bookings</a>
+        <a href="/logout">Logout</a>
+      <% } else { %>
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+      <% } %>
+    </div>
+    <h1>Campus Ride List</h1>
+    <ul>
+      <% if (rides.length === 0) { %>
+        <li>No rides available.</li>
+      <% } %>
+      <% rides.forEach(function(ride, idx) { %>
+        <li>
+          <b><%= ride.from %></b> to <b><%= ride.to %></b> at <%= ride.time %> | Seats: <%= ride.seats %>
+          <% if (user) { %>
+            <form method="POST" action="/book/<%= idx %>" style="display:inline">
+              <button class="btn" <%= ride.seats < 1 ? 'disabled' : '' %>>Book</button>
+            </form>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+</body>
+</html>

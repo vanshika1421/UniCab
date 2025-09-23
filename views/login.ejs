@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7fa; }
+    .container { max-width: 400px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 32px; }
+    h1 { color: #2a3d66; }
+    label { display: block; margin: 12px 0 4px; }
+    input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+    .btn { background: #2a3d66; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 16px; }
+    .error { color: #c00; margin: 8px 0; }
+    a { color: #2a3d66; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Login</h1>
+    <% if (error) { %><div class="error"><%= error %></div><% } %>
+    <form method="POST" action="/login">
+      <label>Username:</label>
+      <input name="username" required>
+      <label>Password:</label>
+      <input name="password" type="password" required>
+      <button class="btn" type="submit">Login</button>
+    </form>
+    <a href="/register">Don't have an account? Register</a>
+  </div>
+</body>
+</html>
