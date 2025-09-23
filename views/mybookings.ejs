@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Bookings</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7fa; }
+    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 32px; }
+    h1 { color: #2a3d66; }
+    ul { list-style: none; padding: 0; }
+    li { background: #e9f0fa; margin: 8px 0; padding: 12px; border-radius: 5px; }
+    .nav { margin-bottom: 20px; }
+    .nav a { margin-right: 12px; text-decoration: none; color: #2a3d66; font-weight: bold; }
+    .nav span { color: #2a3d66; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/add">Add Ride</a>
+      <a href="/logout">Logout</a>
+    </div>
+    <h1>My Bookings</h1>
+    <ul>
+      <% if (bookings.length === 0) { %>
+        <li>No bookings yet.</li>
+      <% } %>
+      <% bookings.forEach(function(booking) { %>
+        <li>
+          <b><%= rides[booking.rideIdx] ? rides[booking.rideIdx].from : 'N/A' %></b> to <b><%= rides[booking.rideIdx] ? rides[booking.rideIdx].to : 'N/A' %></b> at <%= rides[booking.rideIdx] ? rides[booking.rideIdx].time : 'N/A' %> | Booked on: <%= new Date(booking.date).toLocaleString() %>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+</body>
+</html>
