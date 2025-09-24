@@ -29,6 +29,9 @@
       <div class="ride-block">
         <div class="ride-title">
           <b><%= rb.ride.from %></b> to <b><%= rb.ride.to %></b> at <%= rb.ride.time %> | Price: ₹<%= rb.ride.price %> | Seats: <%= rb.ride.seats %>
+          <form action="/cancel-ride/<%= rb.ride._id %>" method="POST" style="display:inline">
+            <button type="submit" style="margin-left:16px;color:#fff;background:#d9534f;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">Cancel Ride</button>
+          </form>
         </div>
         <ul>
           <% if (rb.bookings.length === 0) { %>

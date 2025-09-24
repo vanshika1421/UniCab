@@ -4,6 +4,7 @@ const app = express();
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/unicab')

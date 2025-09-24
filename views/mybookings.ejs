@@ -27,7 +27,10 @@
       <% } %>
       <% bookings.forEach(function(booking) { %>
         <li>
-          <b><%= booking.ride ? booking.ride.from : 'N/A' %></b> to <b><%= booking.ride ? booking.ride.to : 'N/A' %></b> at <%= booking.ride ? booking.ride.time : 'N/A' %> | Booked on: <%= new Date(booking.bookedAt).toLocaleString() %>
+          <b><%= booking.ride ? booking.ride.from : 'N/A' %></b> to <b><%= booking.ride ? booking.ride.to : 'N/A' %></b> at <%= booking.ride ? new Date(booking.ride.time).toLocaleString() : 'N/A' %> | Booked on: <%= new Date(booking.bookedAt).toLocaleString() %>
+          <form action="/cancel-booking/<%= booking._id %>" method="POST" style="display:inline">
+            <button type="submit" style="margin-left:16px;color:#fff;background:#d9534f;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">Cancel</button>
+          </form>
         </li>
       <% }) %>
     </ul>

@@ -1,3 +1,26 @@
+// Cancel a ride (driver)
+exports.cancelRide = async (req, res) => {
+	try {
+		const rideId = req.params.rideId;
+		const user = await User.findById(req.user.id);
+		if (!user) {
+			res.clearCookie('token');
+			return res.redirect('/login');
+		}
+		const ride = await Ride.findById(rideId);
+		if (!ride || ride.driver.toString() !== user._id.toString()) {
+			return res.status(403).send('Unauthorized or ride not found');
+		}
+		// Delete all bookings for this ride
+		const Booking = require('../models/Booking');
+		await Booking.deleteMany({ ride: rideId });
+		await Ride.findByIdAndDelete(rideId);
+		res.redirect('/driver/notifications');
+	} catch (error) {
+		console.error('Error cancelling ride:', error);
+		res.status(500).send('Error cancelling ride');
+	}
+};
 
 const Ride = require('../models/Ride');
 const User = require('../models/User');
