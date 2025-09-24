@@ -10,11 +10,11 @@ function getAllUsers() {
   return JSON.parse(data || '[]');
 }
 
-function addUser(username, password) {
+function addUser(username, password, role) {
   const users = getAllUsers();
   if (users.find(u => u.username === username)) return false;
   const hash = crypto.createHash('sha256').update(password).digest('hex');
-  users.push({ username, password: hash });
+  users.push({ username, password: hash, role });
   fs.writeFileSync(dataPath, JSON.stringify(users, null, 2));
   return true;
 }
