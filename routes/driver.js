@@ -1,4 +1,5 @@
 
+
 const express = require('express');
 const router = express.Router();
 const rideController = require('../controllers/rideController');
@@ -13,5 +14,7 @@ router.post('/add', requireLogin, requireRole('driver'), rideController.addRide)
 
 
 router.get('/driver/notifications', requireLogin, requireRole('driver'), rideController.getDriverNotifications);
+// Cancel a ride (driver)
+router.post('/cancel-ride/:rideId', requireLogin, requireRole('driver'), rideController.cancelRide);
 
 module.exports = router;

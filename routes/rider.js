@@ -11,5 +11,8 @@ router.post('/book/:rideId', requireLogin, requireRole('rider'), bookingControll
 
 
 router.get('/mybookings', requireLogin, bookingController.getMyBookings);
+// Cancel a booking (rider)
+router.post('/cancel-booking/:bookingId', requireLogin, requireRole('rider'), bookingController.cancelBooking);
+
 
 module.exports = router;

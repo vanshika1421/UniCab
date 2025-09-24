@@ -1,3 +1,33 @@
+// Cancel a booking (rider)
+exports.cancelBooking = async (req, res) => {
+	try {
+		const bookingId = req.params.bookingId;
+		if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+			return res.status(400).send('Invalid booking ID');
+		}
+		// User info is now available from JWT token
+		const user = await User.findById(req.user.id);
+		if (!user) {
+			res.clearCookie('token');
+			return res.redirect('/login');
+		}
+		const booking = await Booking.findById(bookingId).populate('ride');
+		if (!booking || booking.rider.toString() !== user._id.toString()) {
+			return res.status(403).send('Unauthorized or booking not found');
+		}
+		// Increase seat count back
+		const ride = await Ride.findById(booking.ride._id);
+		if (ride) {
+			ride.seats += 1;
+			await ride.save();
+		}
+		await Booking.findByIdAndDelete(bookingId);
+		res.redirect('/mybookings');
+	} catch (error) {
+		console.error('Error cancelling booking:', error);
+		res.status(500).send('Error cancelling booking');
+	}
+};
 
 const Booking = require('../models/Booking');
 const Ride = require('../models/Ride');
