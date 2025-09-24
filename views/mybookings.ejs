@@ -27,7 +27,7 @@
       <% } %>
       <% bookings.forEach(function(booking) { %>
         <li>
-          <b><%= rides[booking.rideIdx] ? rides[booking.rideIdx].from : 'N/A' %></b> to <b><%= rides[booking.rideIdx] ? rides[booking.rideIdx].to : 'N/A' %></b> at <%= rides[booking.rideIdx] ? rides[booking.rideIdx].time : 'N/A' %> | Booked on: <%= new Date(booking.date).toLocaleString() %>
+          <b><%= booking.ride ? booking.ride.from : 'N/A' %></b> to <b><%= booking.ride ? booking.ride.to : 'N/A' %></b> at <%= booking.ride ? booking.ride.time : 'N/A' %> | Booked on: <%= new Date(booking.bookedAt).toLocaleString() %>
         </li>
       <% }) %>
     </ul>
