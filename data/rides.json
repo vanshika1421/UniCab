@@ -1,8 +1,22 @@
 [
   {
-    "from": "Chitkara",
+    "from": "Chitkara University,Punjab",
     "to": "Ambala",
-    "time": "3:45",
-    "seats": 2
+    "time": "3:50",
+    "seats": 0,
+    "price": 70,
+    "driver": "Vanshika",
+    "driverName": "Vanshika",
+    "contact": "123456789"
+  },
+  {
+    "from": "Chitkara University,Punjab",
+    "to": "Ambala",
+    "time": "3:50",
+    "seats": 0,
+    "price": 80,
+    "driver": "Vanshika",
+    "driverName": "Vanshika",
+    "contact": "987654321"
   }
 ]

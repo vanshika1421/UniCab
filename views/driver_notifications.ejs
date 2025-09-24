@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Driver Notifications</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7fa; }
+    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 32px; }
+    h1 { color: #2a3d66; }
+    .ride-block { margin-bottom: 32px; }
+    .ride-title { font-weight: bold; color: #2a3d66; }
+    ul { list-style: none; padding: 0; }
+    li { background: #e9f0fa; margin: 8px 0; padding: 12px; border-radius: 5px; }
+    .nav { margin-bottom: 20px; }
+    .nav a { margin-right: 12px; text-decoration: none; color: #2a3d66; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/add">Add Ride</a>
+      <a href="/logout">Logout</a>
+    </div>
+    <h1>Ride Bookings Notifications</h1>
+    <% if (rideBookings.length === 0) { %>
+      <p>You have not created any rides yet.</p>
+    <% } %>
+    <% rideBookings.forEach(function(rb) { %>
+      <div class="ride-block">
+        <div class="ride-title">
+          <b><%= rb.ride.from %></b> to <b><%= rb.ride.to %></b> at <%= rb.ride.time %> | Price: ₹<%= rb.ride.price %> | Seats: <%= rb.ride.seats %>
+        </div>
+        <ul>
+          <% if (rb.bookings.length === 0) { %>
+            <li>No bookings for this ride yet.</li>
+          <% } %>
+          <% rb.bookings.forEach(function(b) { %>
+            <li>Booked by: <b><%= b.username %></b> on <%= new Date(b.date).toLocaleString() %></li>
+          <% }) %>
+        </ul>
+      </div>
+    <% }) %>
+  </div>
+</body>
+</html>

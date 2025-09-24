@@ -1,6 +1,17 @@
 [
   {
+    "username": "Vishakha",
+    "password": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "role": "admin"
+  },
+  {
     "username": "Vanshika",
-    "password": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"
+    "password": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "role": "driver"
+  },
+  {
+    "username": "Navya",
+    "password": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "role": "rider"
   }
 ]

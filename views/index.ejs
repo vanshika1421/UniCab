@@ -20,7 +20,10 @@
     <div class="nav">
       <% if (user) { %>
         <span>Welcome, <%= user %>!</span>
-        <a href="/add">Add Ride</a>
+        <% if (role === 'driver') { %>
+          <a href="/add">Add Ride</a>
+          <a href="/driver/notifications">Ride Bookings</a>
+        <% } %>
         <a href="/mybookings">My Bookings</a>
         <a href="/logout">Logout</a>
       <% } else { %>
@@ -35,7 +38,8 @@
       <% } %>
       <% rides.forEach(function(ride, idx) { %>
         <li>
-          <b><%= ride.from %></b> to <b><%= ride.to %></b> at <%= ride.time %> | Seats: <%= ride.seats %>
+          <b><%= ride.from %></b> to <b><%= ride.to %></b> at <%= ride.time %> | Seats: <%= ride.seats %> | Price: ₹<%= ride.price %> per seat<br>
+          Driver: <b><%= ride.driverName %></b> | Contact: <%= ride.contact %>
           <% if (user) { %>
             <form method="POST" action="/book/<%= idx %>" style="display:inline">
               <button class="btn" <%= ride.seats < 1 ? 'disabled' : '' %>>Book</button>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7fa; }
+    .container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 32px; }
+    h1 { color: #2a3d66; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #e9f0fa; }
+    .nav { margin-bottom: 20px; }
+    .nav a { margin-right: 12px; text-decoration: none; color: #2a3d66; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/logout">Logout</a>
+    </div>
+    <h1>Admin Panel</h1>
+    <h2>Users</h2>
+    <table>
+      <tr><th>Username</th><th>Role</th></tr>
+      <% users.forEach(function(u) { %>
+        <tr><td><%= u.username %></td><td><%= u.role %></td></tr>
+      <% }) %>
+    </table>
+    <h2>Rides</h2>
+    <table>
+      <tr><th>From</th><th>To</th><th>Time</th><th>Seats</th><th>Driver</th></tr>
+      <% rides.forEach(function(r) { %>
+        <tr><td><%= r.from %></td><td><%= r.to %></td><td><%= r.time %></td><td><%= r.seats %></td><td><%= r.driver || '' %></td></tr>
+      <% }) %>
+    </table>
+    <h2>Bookings</h2>
+    <table>
+      <tr><th>Username</th><th>Ride Index</th><th>Date</th></tr>
+      <% bookings.forEach(function(b) { %>
+        <tr><td><%= b.username %></td><td><%= b.rideIdx %></td><td><%= new Date(b.date).toLocaleString() %></td></tr>
+      <% }) %>
+    </table>
+  </div>
+</body>
+</html>
