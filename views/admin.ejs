@@ -31,14 +31,18 @@
     <table>
       <tr><th>From</th><th>To</th><th>Time</th><th>Seats</th><th>Driver</th></tr>
       <% rides.forEach(function(r) { %>
-        <tr><td><%= r.from %></td><td><%= r.to %></td><td><%= r.time %></td><td><%= r.seats %></td><td><%= r.driver || '' %></td></tr>
+        <tr><td><%= r.from %></td><td><%= r.to %></td><td><%= r.time %></td><td><%= r.seats %></td><td><%= r.driver ? r.driver.username : r.driverName || 'N/A' %></td></tr>
       <% }) %>
     </table>
     <h2>Bookings</h2>
     <table>
-      <tr><th>Username</th><th>Ride Index</th><th>Date</th></tr>
+      <tr><th>Rider</th><th>Ride</th><th>Date</th></tr>
       <% bookings.forEach(function(b) { %>
-        <tr><td><%= b.username %></td><td><%= b.rideIdx %></td><td><%= new Date(b.date).toLocaleString() %></td></tr>
+        <tr>
+          <td><%= b.rider ? b.rider.username : 'N/A' %></td>
+          <td><%= b.ride ? (b.ride.from + ' to ' + b.ride.to) : 'N/A' %></td>
+          <td><%= new Date(b.bookedAt).toLocaleString() %></td>
+        </tr>
       <% }) %>
     </table>
   </div>

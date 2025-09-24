@@ -41,7 +41,7 @@
           <b><%= ride.from %></b> to <b><%= ride.to %></b> at <%= ride.time %> | Seats: <%= ride.seats %> | Price: ₹<%= ride.price %> per seat<br>
           Driver: <b><%= ride.driverName %></b> | Contact: <%= ride.contact %>
           <% if (user) { %>
-            <form method="POST" action="/book/<%= idx %>" style="display:inline">
+            <form method="POST" action="/book/<%= ride._id %>" style="display:inline">
               <button class="btn" <%= ride.seats < 1 ? 'disabled' : '' %>>Book</button>
             </form>
           <% } %>
