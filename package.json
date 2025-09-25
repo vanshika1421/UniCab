@@ -1,7 +1,7 @@
 {
   "name": "backend-prject",
   "version": "1.0.0",
-  "description": "This project is a Node.js + Express backend for a campus carpooling/ride-sharing system. It features MongoDB for data storage, Redis for caching, JWT authentication, WebSocket for live ride updates, and role-based access (driver, rider, admin).",
+  "description": "This project is a Node.js + Express backend for a campus carpooling/ride-sharing system. It features MongoDB for data storage, Redis for caching, JWT authentication, WebSocket for live ride updates, and role-based access (driver, rider).",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

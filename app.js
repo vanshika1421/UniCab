@@ -21,9 +21,12 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// JWT Authentication middleware for all routes
-const { optionalAuth } = require('./middleware/auth');
-app.use(optionalAuth);
+// Middleware to get current user from cookie
+app.use((req, res, next) => {
+  res.locals.user = req.cookies.user || null;
+  res.locals.role = req.cookies.role || null;
+  next();
+});
 
 // Models
 const User = require('./models/User');
@@ -35,7 +38,6 @@ app.use('/', require('./routes/index'));
 app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/driver'));
 app.use('/', require('./routes/rider'));
-app.use('/', require('./routes/admin'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Ride app running on port ${PORT}`));

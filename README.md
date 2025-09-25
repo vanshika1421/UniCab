@@ -1,13 +1,12 @@
 # Campus Carpooling / Ride-Sharing System Backend
 
-This project is a Node.js + Express backend for a campus carpooling/ride-sharing system. It features MongoDB for data storage, Redis for caching, JWT authentication, WebSocket for live ride updates, and role-based access (driver, rider, admin).
+This project is a Node.js + Express backend for a campus carpooling/ride-sharing system. It features MongoDB for data storage, Redis for caching, JWT authentication, WebSocket for live ride updates, and role-based access (driver, rider).
 
 ## Features
 - Students create ride offers (from → to, time, seats, cost)
 - Search and join rides
 - Prevent overbooking (middleware validation)
 - Live ride status updates (WebSocket)
-- Admin: track rides, flag fake ones
 - Analytics: most used routes, busy times
 
 ## Tech Stack

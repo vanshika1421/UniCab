@@ -1,3 +1,8 @@
+const Booking = require('../models/Booking');
+const Ride = require('../models/Ride');
+const User = require('../models/User');
+const mongoose = require('mongoose');
+
 // Cancel a booking (rider)
 exports.cancelBooking = async (req, res) => {
 	try {
@@ -5,10 +10,10 @@ exports.cancelBooking = async (req, res) => {
 		if (!mongoose.Types.ObjectId.isValid(bookingId)) {
 			return res.status(400).send('Invalid booking ID');
 		}
-		// User info is now available from JWT token
-		const user = await User.findById(req.user.id);
+		const user = await User.findOne({ username: res.locals.user });
 		if (!user) {
-			res.clearCookie('token');
+			res.clearCookie('user');
+			res.clearCookie('role');
 			return res.redirect('/login');
 		}
 		const booking = await Booking.findById(bookingId).populate('ride');
@@ -29,16 +34,16 @@ exports.cancelBooking = async (req, res) => {
 	}
 };
 
-const Booking = require('../models/Booking');
-const Ride = require('../models/Ride');
-const User = require('../models/User');
-const mongoose = require('mongoose');
-
 // Book a ride (rider)
 exports.bookRide = async (req, res) => {
 	try {
+		console.log('Received rideId:', req.params.rideId);
+		console.log('rideId type:', typeof req.params.rideId);
+		console.log('rideId length:', req.params.rideId.length);
+		
 		// Validate ObjectId
 		if (!mongoose.Types.ObjectId.isValid(req.params.rideId)) {
+			console.log('ObjectId validation failed for:', req.params.rideId);
 			return res.status(400).send('Invalid ride ID');
 		}
 		
@@ -46,10 +51,10 @@ exports.bookRide = async (req, res) => {
 		if (!ride || ride.seats < 1) {
 			return res.status(400).send('No seats available');
 		}
-		// User info is now available from JWT token
-		const user = await User.findById(req.user.id);
+		const user = await User.findOne({ username: res.locals.user });
 		if (!user) {
-			res.clearCookie('token');
+			res.clearCookie('user');
+			res.clearCookie('role');
 			return res.redirect('/login');
 		}
 		ride.seats -= 1;
@@ -65,17 +70,12 @@ exports.bookRide = async (req, res) => {
 
 // Get all bookings for a rider
 exports.getMyBookings = async (req, res) => {
-	try {
-		// User info is now available from JWT token
-		const user = await User.findById(req.user.id);
-		if (!user) {
-			res.clearCookie('token');
-			return res.redirect('/login');
-		}
-		const bookings = await Booking.find({ rider: user._id }).populate('ride');
-		res.render('mybookings', { bookings });
-	} catch (error) {
-		console.error('Error fetching bookings:', error);
-		res.status(500).send('Error fetching bookings');
+	const user = await User.findOne({ username: res.locals.user });
+	if (!user) {
+		res.clearCookie('user');
+		res.clearCookie('role');
+		return res.redirect('/login');
 	}
+	const bookings = await Booking.find({ rider: user._id }).populate('ride');
+	res.render('mybookings', { bookings });
 };

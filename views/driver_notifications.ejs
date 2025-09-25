@@ -38,7 +38,7 @@
             <li>No bookings for this ride yet.</li>
           <% } %>
           <% rb.bookings.forEach(function(b) { %>
-            <li>Booked by: <b><%= b.username %></b> on <%= new Date(b.date).toLocaleString() %></li>
+            <li>Booked by: <b><%= b.rider ? b.rider.username : 'Unknown' %></b> on <%= new Date(b.bookedAt).toLocaleString() %></li>
           <% }) %>
         </ul>
       </div>
