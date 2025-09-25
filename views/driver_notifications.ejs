@@ -95,7 +95,7 @@
     
     .nav a { 
       text-decoration: none; 
-      color: white;
+      color: black;
       font-weight: 600;
       padding: 12px 20px;
       border-radius: 25px;
@@ -251,7 +251,6 @@
     <div class="header">
       <h1>👨‍✈️ Driver Dashboard</h1>
     </div>
-    
     <div class="nav">
       <div>
         <a href="/">⌂ Home</a>
@@ -259,7 +258,6 @@
         <a href="/logout">🚪 Logout</a>
       </div>
     </div>
-    
     <div class="content">
       <% if (rideBookings.length === 0) { %>
         <div class="no-rides">
@@ -280,7 +278,6 @@
                 <button type="submit" class="cancel-ride-btn">❌ Cancel Ride</button>
               </form>
             </div>
-            
             <div style="border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px; margin-top: 20px;">
               <h3 style="color: #1976d2; margin-bottom: 15px; font-size: 1.1rem;">📋 Bookings:</h3>
               <ul>
@@ -290,11 +287,37 @@
                   </li>
                 <% } %>
                 <% rb.bookings.forEach(function(b) { %>
-                  <li>
-                    👤 Booked by: <b><%= b.rider ? b.rider.username : 'Unknown' %></b><br>
-                    📅 Booking Date: <%= new Date(b.bookedAt).toLocaleString() %>
-                  </li>
-                <% }) %>
+  <li>
+    👤 Booked by: <b><%= b.rider ? b.rider.username : 'Unknown' %></b><br>
+    📅 Booking Date: <%= new Date(b.bookedAt).toLocaleString() %><br>
+    <span 
+      style="
+        display:inline-block;
+        margin-top:8px;
+        padding:4px 12px;
+        border-radius:12px;
+        font-weight:600;
+        font-size:0.95em;
+        background:
+          <%= b.status === 'confirmed' ? '#c8e6c9' : b.status === 'pending' ? '#fff9c4' : '#ffcdd2' %>;
+        color:
+          <%= b.status === 'confirmed' ? '#388e3c' : b.status === 'pending' ? '#fbc02d' : '#d32f2f' %>;
+        border:1px solid #e0e0e0;
+      ">
+      <%= b.status.charAt(0).toUpperCase() + b.status.slice(1) %>
+    </span>
+    <% if (b.status === 'pending') { %>
+      <form action="/booking/<%= b._id %>/confirm" method="POST" style="display:inline;">
+        <button type="submit" class="cancel-ride-btn" style="background: #66bb6a; margin-left:8px;">CONFIRM</button>
+      </form>
+    <% } %>
+    <% if (b.status === 'pending' || b.status === 'confirmed') { %>
+      <form action="/booking/<%= b._id %>/cancel" method="POST" style="display:inline;">
+        <button type="submit" class="cancel-ride-btn" style="background: #ffb74d; margin-left:8px;">CANCEL</button>
+      </form>
+    <% } %>
+  </li>
+<% }) %>
               </ul>
             </div>
           </div>
@@ -302,5 +325,6 @@
       <% } %>
     </div>
   </div>
+
 </body>
 </html>

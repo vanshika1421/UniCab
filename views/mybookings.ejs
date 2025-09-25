@@ -8,7 +8,6 @@
       padding: 0;
       box-sizing: border-box;
     }
-    
     body { 
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #e8f5e8 0%, #e3f2fd 100%);
@@ -16,7 +15,6 @@
       background-attachment: fixed;
       position: relative;
     }
-    
     body::before {
       content: '';
       position: fixed;
@@ -28,7 +26,6 @@
       opacity: 0.1;
       z-index: -1;
     }
-    
     .container { 
       max-width: 900px; 
       margin: 20px auto; 
@@ -40,7 +37,6 @@
       overflow: hidden;
       border: 1px solid rgba(255,255,255,0.2);
     }
-    
     .header {
       background: linear-gradient(135deg, #b39ddb 0%, #90caf9 100%);
       padding: 30px 40px;
@@ -48,7 +44,6 @@
       position: relative;
       overflow: hidden;
     }
-    
     .header::before {
       content: '📱';
       position: absolute;
@@ -58,7 +53,6 @@
       top: 10px;
       animation: float 3s ease-in-out infinite;
     }
-    
     .header::after {
       content: '🎫';
       position: absolute;
@@ -68,12 +62,10 @@
       bottom: 20px;
       animation: float 2s ease-in-out infinite reverse;
     }
-    
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-10px); }
     }
-    
     h1 { 
       color: white;
       font-size: 2.5rem;
@@ -82,7 +74,6 @@
       margin: 0;
       letter-spacing: 1px;
     }
-    
     .nav { 
       background: linear-gradient(135deg, #90caf9 0%, #a5d6a7 100%);
       padding: 20px 40px;
@@ -92,13 +83,11 @@
       flex-wrap: wrap;
       gap: 15px;
     }
-    
     .nav-left, .nav-right {
       display: flex;
       align-items: center;
       gap: 15px;
     }
-    
     .nav a { 
       text-decoration: none; 
       color: white;
@@ -111,24 +100,20 @@
       transition: all 0.3s ease;
       font-size: 14px;
     }
-    
     .nav a:hover {
       background: rgba(255,255,255,0.3);
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
-    
     .content {
       padding: 40px;
     }
-    
     ul { 
       list-style: none; 
       padding: 0;
       display: grid;
       gap: 20px;
     }
-    
     li { 
       background: linear-gradient(135deg, #e1f5fe 0%, #f3e5f5 100%);
       margin: 0;
@@ -146,12 +131,10 @@
       flex-wrap: wrap;
       gap: 15px;
     }
-    
     li:hover {
       transform: translateY(-5px);
       box-shadow: 0 15px 35px rgba(0,0,0,0.2);
     }
-    
     li::before {
       content: '🎫';
       position: absolute;
@@ -160,28 +143,23 @@
       font-size: 30px;
       opacity: 0.3;
     }
-    
     .booking-info {
       flex: 1;
       min-width: 300px;
     }
-    
     .booking-route {
       font-size: 1.2em;
       margin-bottom: 8px;
       font-weight: 600;
     }
-    
     .booking-route b {
       color: #1976d2;
     }
-    
     .booking-details {
       font-size: 0.9rem;
       opacity: 0.9;
       line-height: 1.4;
     }
-    
     .cancel-btn { 
       background: linear-gradient(135deg, #ff4757 0%, #ff6b6b 100%);
       color: white;
@@ -196,16 +174,13 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
     .cancel-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(255,71,87,0.5);
     }
-    
     .cancel-btn:active {
       transform: translateY(0px);
     }
-    
     .no-bookings {
       text-align: center;
       padding: 60px 20px;
@@ -216,7 +191,6 @@
       font-size: 1.2rem;
       position: relative;
     }
-    
     .no-bookings::before {
       content: '📋❌';
       display: block;
@@ -224,35 +198,28 @@
       margin-bottom: 20px;
       opacity: 0.7;
     }
-    
     @media (max-width: 768px) {
       .container {
         margin: 10px;
         border-radius: 15px;
       }
-      
       .header, .nav, .content {
         padding: 20px;
       }
-      
       h1 {
         font-size: 2rem;
       }
-      
       .nav {
         flex-direction: column;
         text-align: center;
       }
-      
       .nav-left, .nav-right {
         justify-content: center;
       }
-      
       li {
         flex-direction: column;
         text-align: center;
       }
-      
       .booking-info {
         min-width: auto;
         width: 100%;
@@ -265,7 +232,6 @@
     <div class="header">
       <h1>▼ My Bookings</h1>
     </div>
-    
     <div class="nav">
       <div class="nav-left">
         <span>🎫 Your Ride History</span>
@@ -275,7 +241,6 @@
         <a href="/logout">🚪 Logout</a>
       </div>
     </div>
-    
     <div class="content">
       <% if (bookings.length === 0) { %>
         <div class="no-bookings">
@@ -291,9 +256,25 @@
                   <b><%= booking.ride ? booking.ride.from : 'N/A' %></b> ➡️ <b><%= booking.ride ? booking.ride.to : 'N/A' %></b>
                 </div>
                 <div class="booking-details">
-                  🕐 <strong>Ride Time:</strong> <%= booking.ride ? new Date(booking.ride.time).toLocaleString() : 'N/A' %><br>
+                  🕐 <strong>Ride Time:</strong> <%= booking.ride && booking.ride.time ? new Date(booking.ride.time).toLocaleString() : 'N/A' %><br>
                   📅 <strong>Booked on:</strong> <%= new Date(booking.bookedAt).toLocaleString() %><br>
-                  💰 <strong>Price:</strong> ₹<%= booking.ride ? booking.ride.price : 'N/A' %> per seat
+                  💰 <strong>Price:</strong> ₹<%= booking.ride ? booking.ride.price : 'N/A' %> per seat<br>
+                  <span 
+                    style="
+                      display:inline-block;
+                      margin-top:8px;
+                      padding:4px 12px;
+                      border-radius:12px;
+                      font-weight:600;
+                      font-size:0.95em;
+                      background:
+                        <%= booking.status === 'confirmed' ? '#c8e6c9' : booking.status === 'pending' ? '#fff9c4' : '#ffcdd2' %>;
+                      color:
+                        <%= booking.status === 'confirmed' ? '#388e3c' : booking.status === 'pending' ? '#fbc02d' : '#d32f2f' %>;
+                      border:1px solid #e0e0e0;
+                    ">
+                    <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                  </span>
                 </div>
               </div>
               <form action="/cancel-booking/<%= booking._id %>" method="POST" style="display:inline">
