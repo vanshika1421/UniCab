@@ -10,16 +10,15 @@ exports.cancelBooking = async (req, res) => {
 		if (!mongoose.Types.ObjectId.isValid(bookingId)) {
 			return res.status(400).send('Invalid booking ID');
 		}
-		const user = await User.findOne({ username: res.locals.user });
-		if (!user) {
-			res.clearCookie('user');
-			res.clearCookie('role');
-			return res.redirect('/login');
-		}
+		
+		// Get user from JWT token
+		const userId = req.user.id;
 		const booking = await Booking.findById(bookingId).populate('ride');
-		if (!booking || booking.rider.toString() !== user._id.toString()) {
+		
+		if (!booking || booking.rider.toString() !== userId.toString()) {
 			return res.status(403).send('Unauthorized or booking not found');
 		}
+		
 		// Increase seat count back
 		const ride = await Ride.findById(booking.ride._id);
 		if (ride) {
@@ -51,15 +50,13 @@ exports.bookRide = async (req, res) => {
 		if (!ride || ride.seats < 1) {
 			return res.status(400).send('No seats available');
 		}
-		const user = await User.findOne({ username: res.locals.user });
-		if (!user) {
-			res.clearCookie('user');
-			res.clearCookie('role');
-			return res.redirect('/login');
-		}
+		
+		// Get user from JWT token
+		const userId = req.user.id;
+		
 		ride.seats -= 1;
 		await ride.save();
-		const booking = new Booking({ rider: user._id, ride: ride._id });
+		const booking = new Booking({ rider: userId, ride: ride._id });
 		await booking.save();
 		res.redirect('/mybookings');
 	} catch (error) {
@@ -70,12 +67,13 @@ exports.bookRide = async (req, res) => {
 
 // Get all bookings for a rider
 exports.getMyBookings = async (req, res) => {
-	const user = await User.findOne({ username: res.locals.user });
-	if (!user) {
-		res.clearCookie('user');
-		res.clearCookie('role');
-		return res.redirect('/login');
+	try {
+		// Get user from JWT token
+		const userId = req.user.id;
+		const bookings = await Booking.find({ rider: userId }).populate('ride');
+		res.render('mybookings', { bookings });
+	} catch (error) {
+		console.error('Error fetching bookings:', error);
+		res.status(500).send('Error fetching bookings');
 	}
-	const bookings = await Booking.find({ rider: user._id }).populate('ride');
-	res.render('mybookings', { bookings });
 };

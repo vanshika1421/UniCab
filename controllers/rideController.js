@@ -5,14 +5,12 @@ const User = require('../models/User');
 exports.cancelRide = async (req, res) => {
 	try {
 		const rideId = req.params.rideId;
-		const user = await User.findOne({ username: res.locals.user });
-		if (!user) {
-			res.clearCookie('user');
-			res.clearCookie('role');
-			return res.redirect('/login');
-		}
+		
+		// Get user from JWT token
+		const userId = req.user.id;
+		
 		const ride = await Ride.findById(rideId);
-		if (!ride || ride.driver.toString() !== user._id.toString()) {
+		if (!ride || ride.driver.toString() !== userId.toString()) {
 			return res.status(403).send('Unauthorized or ride not found');
 		}
 		// Delete all bookings for this ride
@@ -28,33 +26,48 @@ exports.cancelRide = async (req, res) => {
 
 // Add a new ride (driver)
 exports.addRide = async (req, res) => {
-	const { from, to, time, seats, price, driverName, contact } = req.body;
-	if (!from || !to || !time || !seats || !price || !driverName || !contact) {
-		return res.status(400).send('All fields required');
+	try {
+		const { from, to, time, seats, price, driverName, contact } = req.body;
+		if (!from || !to || !time || !seats || !price || !driverName || !contact) {
+			return res.status(400).send('All fields required');
+		}
+		
+		// Get user from JWT token
+		const userId = req.user.id;
+		
+		const ride = new Ride({
+			from,
+			to,
+			time,
+			seats: parseInt(seats, 10),
+			price: parseFloat(price),
+			driver: userId,
+			driverName,
+			contact
+		});
+		await ride.save();
+		res.redirect('/');
+	} catch (error) {
+		console.error('Error adding ride:', error);
+		res.status(500).send('Error adding ride');
 	}
-	const user = await User.findOne({ username: res.locals.user });
-	const ride = new Ride({
-		from,
-		to,
-		time,
-		seats: parseInt(seats, 10),
-		price: parseFloat(price),
-		driver: user._id,
-		driverName,
-		contact
-	});
-	await ride.save();
-	res.redirect('/');
 };
 
 // Get all rides for a driver (notifications)
 exports.getDriverNotifications = async (req, res) => {
-	const user = await User.findOne({ username: res.locals.user });
-	const myRides = await Ride.find({ driver: user._id });
-	const Booking = require('../models/Booking');
-	const rideBookings = await Promise.all(myRides.map(async ride => {
-		const bookings = await Booking.find({ ride: ride._id }).populate('rider');
-		return { ride, bookings };
-	}));
-	res.render('driver_notifications', { rideBookings });
+	try {
+		// Get user from JWT token
+		const userId = req.user.id;
+		
+		const myRides = await Ride.find({ driver: userId });
+		const Booking = require('../models/Booking');
+		const rideBookings = await Promise.all(myRides.map(async ride => {
+			const bookings = await Booking.find({ ride: ride._id }).populate('rider');
+			return { ride, bookings };
+		}));
+		res.render('driver_notifications', { rideBookings });
+	} catch (error) {
+		console.error('Error fetching driver notifications:', error);
+		res.status(500).send('Error fetching driver notifications');
+	}
 };
