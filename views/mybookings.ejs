@@ -1,38 +1,309 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Bookings</title>
+  <title>UniCab - My Bookings</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f7f7fa; }
-    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 32px; }
-    h1 { color: #2a3d66; }
-    ul { list-style: none; padding: 0; }
-    li { background: #e9f0fa; margin: 8px 0; padding: 12px; border-radius: 5px; }
-    .nav { margin-bottom: 20px; }
-    .nav a { margin-right: 12px; text-decoration: none; color: #2a3d66; font-weight: bold; }
-    .nav span { color: #2a3d66; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e8f5e8 0%, #e3f2fd 100%);
+      min-height: 100vh;
+      background-attachment: fixed;
+      position: relative;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="cars" patternUnits="userSpaceOnUse" width="100" height="100"><rect width="100" height="100" fill="none"/><path d="M20 60h60c2 0 4-2 4-4v-20c0-2-2-4-4-4H20c-2 0-4 2-4 4v20c0 2 2 4 4 4z" fill="rgba(255,255,255,0.05)"/><circle cx="30" cy="70" r="8" fill="rgba(255,255,255,0.03)"/><circle cx="70" cy="70" r="8" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23cars)"/></svg>');
+      opacity: 0.1;
+      z-index: -1;
+    }
+    
+    .container { 
+      max-width: 900px; 
+      margin: 20px auto; 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #b39ddb 0%, #90caf9 100%);
+      padding: 30px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: '📱';
+      position: absolute;
+      font-size: 60px;
+      opacity: 0.2;
+      left: 20px;
+      top: 10px;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .header::after {
+      content: '🎫';
+      position: absolute;
+      font-size: 40px;
+      opacity: 0.3;
+      right: 30px;
+      bottom: 20px;
+      animation: float 2s ease-in-out infinite reverse;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    h1 { 
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    
+    .nav { 
+      background: linear-gradient(135deg, #90caf9 0%, #a5d6a7 100%);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .nav a { 
+      text-decoration: none; 
+      color: white;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 25px;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.3);
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+    
+    .nav a:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .content {
+      padding: 40px;
+    }
+    
+    ul { 
+      list-style: none; 
+      padding: 0;
+      display: grid;
+      gap: 20px;
+    }
+    
+    li { 
+      background: linear-gradient(135deg, #e1f5fe 0%, #f3e5f5 100%);
+      margin: 0;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      color: #424242;
+      border: 2px solid #e8eaf6;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    li:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    
+    li::before {
+      content: '🎫';
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-size: 30px;
+      opacity: 0.3;
+    }
+    
+    .booking-info {
+      flex: 1;
+      min-width: 300px;
+    }
+    
+    .booking-route {
+      font-size: 1.2em;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    
+    .booking-route b {
+      color: #1976d2;
+    }
+    
+    .booking-details {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      line-height: 1.4;
+    }
+    
+    .cancel-btn { 
+      background: linear-gradient(135deg, #ff4757 0%, #ff6b6b 100%);
+      color: white;
+      border: none; 
+      padding: 12px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255,71,87,0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .cancel-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255,71,87,0.5);
+    }
+    
+    .cancel-btn:active {
+      transform: translateY(0px);
+    }
+    
+    .no-bookings {
+      text-align: center;
+      padding: 60px 20px;
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+      color: #424242;
+      border: 2px solid #e8eaf6;
+      border-radius: 15px;
+      font-size: 1.2rem;
+      position: relative;
+    }
+    
+    .no-bookings::before {
+      content: '📋❌';
+      display: block;
+      font-size: 60px;
+      margin-bottom: 20px;
+      opacity: 0.7;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        border-radius: 15px;
+      }
+      
+      .header, .nav, .content {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .nav {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .nav-left, .nav-right {
+        justify-content: center;
+      }
+      
+      li {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .booking-info {
+        min-width: auto;
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="nav">
-      <a href="/">Home</a>
-      <a href="/logout">Logout</a>
+    <div class="header">
+      <h1>▼ My Bookings</h1>
     </div>
-    <h1>My Bookings</h1>
-    <ul>
+    
+    <div class="nav">
+      <div class="nav-left">
+        <span>🎫 Your Ride History</span>
+      </div>
+      <div class="nav-right">
+        <a href="/">⌂ Home</a>
+        <a href="/logout">🚪 Logout</a>
+      </div>
+    </div>
+    
+    <div class="content">
       <% if (bookings.length === 0) { %>
-        <li>No bookings yet.</li>
+        <div class="no-bookings">
+          No bookings yet!<br>
+          <small>Start exploring rides and book your first trip!</small>
+        </div>
+      <% } else { %>
+        <ul>
+          <% bookings.forEach(function(booking) { %>
+            <li>
+              <div class="booking-info">
+                <div class="booking-route">
+                  <b><%= booking.ride ? booking.ride.from : 'N/A' %></b> ➡️ <b><%= booking.ride ? booking.ride.to : 'N/A' %></b>
+                </div>
+                <div class="booking-details">
+                  🕐 <strong>Ride Time:</strong> <%= booking.ride ? new Date(booking.ride.time).toLocaleString() : 'N/A' %><br>
+                  📅 <strong>Booked on:</strong> <%= new Date(booking.bookedAt).toLocaleString() %><br>
+                  💰 <strong>Price:</strong> ₹<%= booking.ride ? booking.ride.price : 'N/A' %> per seat
+                </div>
+              </div>
+              <form action="/cancel-booking/<%= booking._id %>" method="POST" style="display:inline">
+                <button type="submit" class="cancel-btn">❌ Cancel</button>
+              </form>
+            </li>
+          <% }) %>
+        </ul>
       <% } %>
-      <% bookings.forEach(function(booking) { %>
-        <li>
-          <b><%= booking.ride ? booking.ride.from : 'N/A' %></b> to <b><%= booking.ride ? booking.ride.to : 'N/A' %></b> at <%= booking.ride ? new Date(booking.ride.time).toLocaleString() : 'N/A' %> | Booked on: <%= new Date(booking.bookedAt).toLocaleString() %>
-          <form action="/cancel-booking/<%= booking._id %>" method="POST" style="display:inline">
-            <button type="submit" style="margin-left:16px;color:#fff;background:#d9534f;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">Cancel</button>
-          </form>
-        </li>
-      <% }) %>
-    </ul>
+    </div>
   </div>
 </body>
 </html>

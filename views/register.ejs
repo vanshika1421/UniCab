@@ -1,35 +1,346 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Register</title>
+  <title>UniCab - Register</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f7f7fa; }
-    .container { max-width: 400px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 32px; }
-    h1 { color: #2a3d66; }
-    label { display: block; margin: 12px 0 4px; }
-    input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
-    .btn { background: #2a3d66; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 16px; }
-    .error { color: #c00; margin: 8px 0; }
-    a { color: #2a3d66; text-decoration: none; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e8f5e8 0%, #e3f2fd 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="cars" patternUnits="userSpaceOnUse" width="100" height="100"><rect width="100" height="100" fill="none"/><path d="M20 60h60c2 0 4-2 4-4v-20c0-2-2-4-4-4H20c-2 0-4 2-4 4v20c0 2 2 4 4 4z" fill="rgba(255,255,255,0.05)"/><circle cx="30" cy="70" r="8" fill="rgba(255,255,255,0.03)"/><circle cx="70" cy="70" r="8" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23cars)"/></svg>');
+      opacity: 0.1;
+      z-index: -1;
+    }
+    
+    .container { 
+      max-width: 450px; 
+      width: 90%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.2);
+      animation: slideUp 0.6s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #ffb74d 0%, #81c784 100%);
+      padding: 40px 40px 30px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: '📝';
+      position: absolute;
+      font-size: 50px;
+      opacity: 0.3;
+      left: 20px;
+      top: 20px;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .header::after {
+      content: '🚙';
+      position: absolute;
+      font-size: 40px;
+      opacity: 0.3;
+      right: 20px;
+      bottom: 10px;
+      animation: float 2s ease-in-out infinite reverse;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    
+    h1 { 
+      color: white;
+      font-size: 2.2rem;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    
+    .form-container {
+      padding: 40px;
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+    }
+    
+    label { 
+      display: block; 
+      margin-bottom: 8px;
+      color: #2a3d66;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    
+    input, select { 
+      width: 100%; 
+      padding: 15px 20px;
+      border-radius: 25px;
+      border: 2px solid #e1e8ed;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: rgba(255,255,255,0.9);
+      appearance: none;
+    }
+    
+    select {
+      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23667eea" stroke-width="2"><polyline points="6,9 12,15 18,9"></polyline></svg>');
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 20px;
+      cursor: pointer;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #81c784;
+      box-shadow: 0 0 0 3px rgba(129,199,132,0.2);
+      background: white;
+    }
+    
+    .role-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    
+    .role-card {
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .role-card input[type="radio"] {
+      opacity: 0;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      cursor: pointer;
+    }
+    
+    .role-label {
+      display: block;
+      padding: 20px 15px;
+      background: rgba(255,255,255,0.7);
+      border: 2px solid #e1e8ed;
+      border-radius: 15px;
+      text-align: center;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      color: #2a3d66;
+    }
+    
+    .role-card input[type="radio"]:checked + .role-label {
+      background: linear-gradient(135deg, #66bb6a 0%, #42a5f5 100%);
+      color: white;
+      border-color: #66bb6a;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102,187,106,0.3);
+    }
+    
+    .role-label::before {
+      display: block;
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    
+    .rider-label::before {
+      content: '🙋‍♂️';
+    }
+    
+    .driver-label::before {
+      content: '👨‍✈️';
+    }
+    
+    .btn { 
+      background: linear-gradient(135deg, #81c784 0%, #64b5f6 100%);
+      color: white;
+      border: none; 
+      padding: 15px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1.1rem;
+      width: 100%;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(129,199,132,0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 10px;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(79,172,254,0.6);
+    }
+    
+    .btn:active {
+      transform: translateY(0px);
+    }
+    
+    .error { 
+      color: #ff4757;
+      background: rgba(255,71,87,0.1);
+      border: 1px solid rgba(255,71,87,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .error::before {
+      content: '⚠️';
+      font-size: 1.2rem;
+    }
+    
+    .link-container {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(42,61,102,0.1);
+    }
+    
+    a { 
+      color: #4facfe;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: color 0.3s ease;
+    }
+    
+    a:hover {
+      color: #2d3748;
+      text-decoration: underline;
+    }
+    
+    .home-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .home-link:hover {
+      background: rgba(255,255,255,0.3);
+      color: white;
+      text-decoration: none;
+      transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px;
+        width: calc(100% - 40px);
+      }
+      
+      .header, .form-container {
+        padding: 30px 25px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .role-options {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
+  <a href="/" class="home-link">⌂ Home</a>
   <div class="container">
-    <h1>Register</h1>
-    <% if (error) { %><div class="error"><%= error %></div><% } %>
-    <form method="POST" action="/register">
-      <label>Username:</label>
-      <input name="username" required>
-      <label>Password:</label>
-      <input name="password" type="password" required>
-      <label>Role:</label>
-      <select name="role" required>
-        <option value="rider">Rider</option>
-        <option value="driver">Driver</option>
-      </select>
-      <button class="btn" type="submit">Register</button>
-    </form>
-    <a href="/login">Already have an account? Login</a>
+    <div class="header">
+      <h1>📝 Register</h1>
+    </div>
+    
+    <div class="form-container">
+      <% if (error) { %><div class="error"><%= error %></div><% } %>
+      <form method="POST" action="/register">
+        <div class="form-group">
+          <label>👤 Username:</label>
+          <input name="username" type="text" placeholder="Choose a username" required>
+        </div>
+        
+        <div class="form-group">
+          <label>🔒 Password:</label>
+          <input name="password" type="password" placeholder="Create a secure password" required>
+        </div>
+        
+        <div class="form-group">
+          <label>🎭 Choose your role:</label>
+          <div class="role-options">
+            <div class="role-card">
+              <input type="radio" name="role" value="rider" id="rider" required>
+              <label for="rider" class="role-label rider-label">Rider</label>
+            </div>
+            <div class="role-card">
+              <input type="radio" name="role" value="driver" id="driver" required>
+              <label for="driver" class="role-label driver-label">Driver</label>
+            </div>
+          </div>
+        </div>
+        
+        <button class="btn" type="submit">🚀 Create Account</button>
+      </form>
+      
+      <div class="link-container">
+        <a href="/login">🔑 Already have an account? Login here</a>
+      </div>
+    </div>
   </div>
 </body>
 </html>
