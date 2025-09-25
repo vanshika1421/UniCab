@@ -23,8 +23,9 @@
         <% if (role === 'driver') { %>
           <a href="/add">Add Ride</a>
           <a href="/driver/notifications">Ride Bookings</a>
+        <% } else { %>
+          <a href="/mybookings">My Bookings</a>
         <% } %>
-        <a href="/mybookings">My Bookings</a>
         <a href="/logout">Logout</a>
       <% } else { %>
         <a href="/login">Login</a>
