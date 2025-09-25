@@ -256,7 +256,7 @@
                   <b><%= booking.ride ? booking.ride.from : 'N/A' %></b> ➡️ <b><%= booking.ride ? booking.ride.to : 'N/A' %></b>
                 </div>
                 <div class="booking-details">
-                  🕐 <strong>Ride Time:</strong> <%= booking.ride && booking.ride.time ? new Date(booking.ride.time).toLocaleString() : 'N/A' %><br>
+                  <!-- 🕐 <strong>Ride Time:</strong> <%= booking.ride && booking.ride.time ? new Date(booking.ride.time).toLocaleString() : 'N/A' %><br> -->
                   📅 <strong>Booked on:</strong> <%= new Date(booking.bookedAt).toLocaleString() %><br>
                   💰 <strong>Price:</strong> ₹<%= booking.ride ? booking.ride.price : 'N/A' %> per seat<br>
                   <span 
