@@ -3,52 +3,317 @@
 <head>
   <title>Campus Rides</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f7f7fa; margin: 0; padding: 0; }
-    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 32px; }
-    h1 { color: #2a3d66; }
-    ul { list-style: none; padding: 0; }
-    li { background: #e9f0fa; margin: 8px 0; padding: 12px; border-radius: 5px; }
-    .nav { margin-bottom: 20px; }
-    .nav a { margin-right: 12px; text-decoration: none; color: #2a3d66; font-weight: bold; }
-    .nav span { color: #2a3d66; }
-    .btn { background: #2a3d66; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; }
-    .btn[disabled] { background: #aaa; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+      min-height: 100vh;
+      background-attachment: fixed;
+      position: relative;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="cars" patternUnits="userSpaceOnUse" width="100" height="100"><rect width="100" height="100" fill="none"/><path d="M20 60h60c2 0 4-2 4-4v-20c0-2-2-4-4-4H20c-2 0-4 2-4 4v20c0 2 2 4 4 4z" fill="rgba(255,255,255,0.05)"/><circle cx="30" cy="70" r="8" fill="rgba(255,255,255,0.03)"/><circle cx="70" cy="70" r="8" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23cars)"/></svg>');
+      opacity: 0.1;
+      z-index: -1;
+    }
+    
+    .container { 
+      max-width: 900px; 
+      margin: 20px auto; 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #81c784 0%, #64b5f6 50%, #ffb74d 100%);
+      padding: 30px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: '🚗';
+      position: absolute;
+      font-size: 60px;
+      opacity: 0.2;
+      left: 20px;
+      top: 10px;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .header::after {
+      content: '🚙';
+      position: absolute;
+      font-size: 40px;
+      opacity: 0.3;
+      right: 30px;
+      bottom: 20px;
+      animation: float 2s ease-in-out infinite reverse;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    h1 { 
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    
+    .nav { 
+      background: linear-gradient(135deg, #90caf9 0%, #a5d6a7 100%);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .nav a { 
+      text-decoration: none; 
+      color: white;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 25px;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.3);
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+    
+    .nav a:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .nav span { 
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+    
+    .content {
+      padding: 40px;
+    }
+    
+    ul { 
+      list-style: none; 
+      padding: 0;
+      display: grid;
+      gap: 20px;
+    }
+    
+    li { 
+      background: linear-gradient(135deg, #e1f5fe 0%, #f3e5f5 100%);
+      margin: 0;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      color: #424242;
+      border: 2px solid #e8eaf6;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    li:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    
+    li::before {
+      content: '🚘';
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-size: 30px;
+      opacity: 0.3;
+    }
+    
+    li b {
+      color: #1976d2;
+      font-size: 1.1em;
+    }
+    
+    .ride-info {
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+    
+    .driver-info {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-bottom: 15px;
+    }
+    
+    .btn { 
+      background: linear-gradient(135deg, #66bb6a 0%, #42a5f5 100%);
+      color: white;
+      border: none; 
+      padding: 12px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102,187,106,0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    
+    .btn[disabled] { 
+      background: linear-gradient(135deg, #95a5a6 0%, #bdc3c7 100%);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    
+    .btn[disabled]:hover {
+      transform: none;
+    }
+    
+    .no-rides {
+      text-align: center;
+      padding: 60px 20px;
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+      color: #424242;
+      border: 2px solid #e8eaf6;
+      border-radius: 15px;
+      font-size: 1.2rem;
+      position: relative;
+    }
+    
+    .no-rides::before {
+      content: '🚫🚗';
+      display: block;
+      font-size: 60px;
+      margin-bottom: 20px;
+      opacity: 0.7;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        border-radius: 15px;
+      }
+      
+      .header, .nav, .content {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .nav {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .nav-left, .nav-right {
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="header">
+      <h1>🚗 UniCab Campus Rides 🚙</h1>
+    </div>
+    
     <div class="nav">
-      <% if (user) { %>
-        <span>Welcome, <%= user %>!</span>
-        <% if (role === 'driver') { %>
-          <a href="/add">Add Ride</a>
-          <a href="/driver/notifications">Ride Bookings</a>
-        <% } else { %>
-          <a href="/mybookings">My Bookings</a>
+      <div class="nav-left">
+        <% if (user) { %>
+          <span>👋 Welcome, <%= user %>!</span>
         <% } %>
-        <a href="/logout">Logout</a>
+      </div>
+      <div class="nav-right">
+        <% if (user) { %>
+          <% if (role === 'driver') { %>
+            <a href="/add">➕ Add Ride</a>
+            <a href="/driver/notifications">📋 Ride Bookings</a>
+          <% } else { %>
+            <a href="/mybookings">📱 My Bookings</a>
+          <% } %>
+          <a href="/logout">🚪 Logout</a>
+        <% } else { %>
+          <a href="/login">🔑 Login</a>
+          <a href="/register">📝 Register</a>
+        <% } %>
+      </div>
+    </div>
+    
+    <div class="content">
+      <% if (rides.length === 0) { %>
+        <div class="no-rides">
+          No rides available at the moment.<br>
+          <small>Check back later or add a new ride!</small>
+        </div>
       <% } else { %>
-        <a href="/login">Login</a>
-        <a href="/register">Register</a>
+        <ul>
+          <% rides.forEach(function(ride, idx) { %>
+            <li>
+              <div class="ride-info">
+                <div style="font-size: 1.2em; margin-bottom: 8px;">
+                  <b><%= ride.from %></b> ➡️ <b><%= ride.to %></b>
+                </div>
+                <div>
+                  🕐 <b><%= ride.time %></b> | 💺 <b><%= ride.seats %></b> seats available | 💰 <b>₹<%= ride.price %></b> per seat
+                </div>
+              </div>
+              <div class="driver-info">
+                👨‍💼 Driver: <b><%= ride.driverName %></b> | 📞 <%= ride.contact %>
+              </div>
+              <% if (user) { %>
+                <form method="POST" action="/book/<%= ride._id %>" style="display:inline">
+                  <button class="btn" <%= ride.seats < 1 ? 'disabled' : '' %>>
+                    <%= ride.seats < 1 ? '🚫 Full' : '🎫 Book Now' %>
+                  </button>
+                </form>
+              <% } %>
+            </li>
+          <% }) %>
+        </ul>
       <% } %>
     </div>
-    <h1>Campus Ride List</h1>
-    <ul>
-      <% if (rides.length === 0) { %>
-        <li>No rides available.</li>
-      <% } %>
-      <% rides.forEach(function(ride, idx) { %>
-        <li>
-          <b><%= ride.from %></b> to <b><%= ride.to %></b> at <%= ride.time %> | Seats: <%= ride.seats %> | Price: ₹<%= ride.price %> per seat<br>
-          Driver: <b><%= ride.driverName %></b> | Contact: <%= ride.contact %>
-          <% if (user) { %>
-            <form method="POST" action="/book/<%= ride._id %>" style="display:inline">
-              <button class="btn" <%= ride.seats < 1 ? 'disabled' : '' %>>Book</button>
-            </form>
-          <% } %>
-        </li>
-      <% }) %>
-    </ul>
   </div>
 </body>
 </html>
