@@ -2,8 +2,10 @@ const Booking = require('../models/Booking');
 const Ride = require('../models/Ride');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const { pub, cacheDel } = require('../lib/redisClient');
+const { addNotificationJob } = require('../queues/notificationQueue');
 
-// Cancel a booking (rider)
+
 exports.cancelBooking = async (req, res) => {
 	try {
 		const bookingId = req.params.bookingId;
@@ -19,7 +21,7 @@ exports.cancelBooking = async (req, res) => {
 			return res.status(403).send('Unauthorized or booking not found');
 		}
 		
-		// Increase seat count back
+	
 		const ride = await Ride.findById(booking.ride._id);
 		if (ride) {
 			ride.seats += 1;
@@ -58,6 +60,24 @@ exports.bookRide = async (req, res) => {
 		await ride.save();
 		const booking = new Booking({ rider: userId, ride: ride._id });
 		await booking.save();
+
+		// Invalidate cached rides list
+		try { await cacheDel('rides:all'); } catch(e) { }
+
+		// Publish booking.created event for WS microservice
+		try {
+			await pub.publish('booking.created', JSON.stringify({ bookingId: booking._id, rideId: ride._id, riderId: userId }));
+		} catch (err) {
+			console.warn('Failed to publish booking.created:', err && err.message ? err.message : err);
+		}
+
+		// Add background notification job
+		try {
+			await addNotificationJob({ type: 'booking.created', payload: { bookingId: booking._id, rideId: ride._id, riderId: userId } });
+		} catch (err) {
+			console.warn('Failed to enqueue notification job:', err && err.message ? err.message : err);
+		}
+
 		res.redirect('/mybookings');
 	} catch (error) {
 		console.error('Error booking ride:', error);

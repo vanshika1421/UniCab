@@ -1,5 +1,6 @@
 const Ride = require('../models/Ride');
 const User = require('../models/User');
+const { pub, cacheDel } = require('../lib/redisClient');
 
 // Cancel a ride (driver)
 exports.cancelRide = async (req, res) => {
@@ -16,6 +17,12 @@ exports.cancelRide = async (req, res) => {
 		// Delete all bookings for this ride
 		const Booking = require('../models/Booking');
 		await Booking.deleteMany({ ride: rideId });
+		// Invalidate cached rides
+		try { await cacheDel('rides:all'); } catch(e) { }
+
+		// Publish ride.updated / ride.cancelled
+		try { await pub.publish('ride.updated', JSON.stringify({ rideId, driver: userId, cancelled: true })); } catch (err) { console.warn('Failed to publish ride.updated', err && err.message ? err.message : err); }
+
 		await Ride.findByIdAndDelete(rideId);
 		res.redirect('/driver/notifications');
 	} catch (error) {
@@ -30,6 +37,15 @@ exports.addRide = async (req, res) => {
 		const { from, to, time, seats, price, driverName, contact } = req.body;
 		if (!from || !to || !time || !seats || !price || !driverName || !contact) {
 			return res.status(400).send('All fields required');
+		}
+
+		// Business rule: one side MUST be campus (driver either departing from or going to campus)
+		// Allow flexible input but check case-insensitively and trim whitespace.
+		const normalizedFrom = String(from).trim().toLowerCase();
+		const normalizedTo = String(to).trim().toLowerCase();
+		const isCampusInvolved = normalizedFrom.includes('campus') || normalizedTo.includes('campus');
+		if (!isCampusInvolved) {
+			return res.status(400).send("One side must be 'campus' — driver must be going to or departing from campus.");
 		}
 		
 		// Get user from JWT token
@@ -46,6 +62,12 @@ exports.addRide = async (req, res) => {
 			contact
 		});
 		await ride.save();
+		// Invalidate cached rides
+		try { await cacheDel('rides:all'); } catch(e) { }
+
+		// Publish ride.updated event
+		try { await pub.publish('ride.updated', JSON.stringify({ rideId: ride._id, driver: userId })); } catch (err) { console.warn('Failed to publish ride.updated', err && err.message ? err.message : err); }
+
 		res.redirect('/');
 	} catch (error) {
 		console.error('Error adding ride:', error);

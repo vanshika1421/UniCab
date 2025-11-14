@@ -24,7 +24,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public')));
 
 // JWT Authentication middleware for all routes
 app.use((req, res, next) => {
@@ -86,7 +85,7 @@ process.on('unhandledRejection', (reason, promise) => {
   // Don't exit the process in development
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = config.port;
 const server = app.listen(PORT, () => {
   console.log(`🚀 Ride app running on port ${PORT}`);
   console.log(`🌐 Visit: http://localhost:${PORT}`);

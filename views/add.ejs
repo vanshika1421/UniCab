@@ -263,14 +263,37 @@
     
     <div class="form-container">
       <form method="POST" action="/add">
+        <div class="form-group full-width">
+          <label>🏷️ Trip role (required):</label>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap; margin-bottom:10px;">
+            <label style="font-weight:600">I am:</label>
+            <select name="campusSide" id="campusSide" required style="padding:10px;border-radius:8px;border:1px solid #ddd;">
+              <option value="from">Departing from campus</option>
+              <option value="to">Going to campus</option>
+            </select>
+            <small style="color:#556; margin-left:6px;">(Pick which side is the campus)</small>
+          </div>
+
+          <label>📍 Campus location (required):</label>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <select name="campusLocation" id="campusLocation" required style="padding:10px;border-radius:8px;border:1px solid #ddd;">
+              <option value="Campus">Campus (generic)</option>
+              <option value="Main Campus">Main Campus</option>
+              <option value="North Campus">North Campus</option>
+              <option value="South Campus">South Campus</option>
+              <option value="Other">Other (type manually)</option>
+            </select>
+            <small style="color:#556; margin-left:6px;">Choose a campus to auto-fill the form. Selecting "Other" lets you type a custom value.</small>
+          </div>
+        </div>
         <div class="form-row">
           <div class="form-group">
-            <label>📍 From:</label>
-            <input name="from" type="text" placeholder="Starting location" required>
+            <label>📍 From (City):</label>
+            <input name="from" type="text" placeholder="Starting city" required>
           </div>
           <div class="form-group">
-            <label>🎯 To:</label>
-            <input name="to" type="text" placeholder="Destination" required>
+            <label>🎯 To (City):</label>
+            <input name="to" type="text" placeholder="Destination city" required>
           </div>
         </div>
         
@@ -305,6 +328,67 @@
         
         <button class="btn" type="submit">🚀 Create Ride</button>
       </form>
+
+      <script>
+        // Prefill campus field based on campusSide and campusLocation selectors.
+        const campusSideSelect = document.getElementById('campusSide');
+        const campusLocationSelect = document.getElementById('campusLocation');
+        const fromInput = document.querySelector('input[name="from"]');
+        const toInput = document.querySelector('input[name="to"]');
+
+        function applyCampusPrefill() {
+          const side = campusSideSelect.value; // 'from' or 'to'
+          const loc = campusLocationSelect.value; // e.g., 'Main Campus' or 'Other'
+
+          if (loc === 'Other') {
+            // Allow manual input (remove readonly) and clear if it was prefilled
+            if (side === 'from') { fromInput.readOnly = false; if (fromInput.value === 'Campus' || fromInput.value.endsWith('Campus')) fromInput.value = ''; }
+            else { toInput.readOnly = false; if (toInput.value === 'Campus' || toInput.value.endsWith('Campus')) toInput.value = ''; }
+            return;
+          }
+
+          // Prefill the appropriate field and make it readonly to prevent accidental edits.
+          if (side === 'from') {
+            fromInput.value = loc;
+            fromInput.readOnly = true;
+            // allow editing the destination
+            toInput.readOnly = false;
+          } else {
+            toInput.value = loc;
+            toInput.readOnly = true;
+            fromInput.readOnly = false;
+          }
+        }
+
+        campusSideSelect.addEventListener('change', applyCampusPrefill);
+        campusLocationSelect.addEventListener('change', applyCampusPrefill);
+
+        // Initialize prefill on page load
+        window.addEventListener('DOMContentLoaded', () => {
+          applyCampusPrefill();
+        });
+        // Client-side form validation: ensure selected campus side has a value when 'Other' is chosen
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+          const side = campusSideSelect.value;
+          const loc = campusLocationSelect.value;
+          if (loc === 'Other') {
+            if (side === 'from' && fromInput.value.trim() === '') {
+              e.preventDefault();
+              alert('Please enter the campus name in the From (City) field.');
+              fromInput.focus();
+              return false;
+            }
+            if (side === 'to' && toInput.value.trim() === '') {
+              e.preventDefault();
+              alert('Please enter the campus name in the To (City) field.');
+              toInput.focus();
+              return false;
+            }
+          }
+          // otherwise allow submit; backend will still validate presence of campus side
+        });
+      </script>
       
       <div class="link-container">
         <a href="/">🔙 Back to all rides</a>

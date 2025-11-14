@@ -282,6 +282,32 @@
     </div>
     
     <div class="content">
+      <form method="GET" action="/" style="margin-bottom:20px; max-width:760px; background:linear-gradient(180deg,#ffffffcc,#f7fbff); padding:14px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <label style="font-weight:600; margin-right:6px;"><input type="radio" name="mode" value="from" <%= (typeof mode !== 'undefined' && mode === 'from') ? 'checked' : '' %> > Departing from (e.g., Campus → City)</label>
+            <label style="font-weight:600; margin-right:6px;"><input type="radio" name="mode" value="to" <%= (typeof mode !== 'undefined' && mode === 'to') ? 'checked' : '' %> > Arriving to (e.g., City → Campus)</label>
+          </div>
+
+          <input name="q" type="search" placeholder="City or campus" value="<%= typeof q !== 'undefined' ? q : '' %>" style="flex:1; padding:10px 12px; border-radius:8px; border:1px solid #ddd; font-size:14px;">
+
+          <select name="campusLocation" style="padding:10px;border-radius:8px;border:1px solid #ddd;">
+            <option value="">— Campus (optional) —</option>
+            <option value="Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'Campus') ? 'selected' : '' %>>Campus (generic)</option>
+            <option value="Main Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'Main Campus') ? 'selected' : '' %>>Main Campus</option>
+            <option value="North Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'North Campus') ? 'selected' : '' %>>North Campus</option>
+            <option value="South Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'South Campus') ? 'selected' : '' %>>South Campus</option>
+            <option value="Other" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'Other') ? 'selected' : '' %>>Other (type in box)</option>
+          </select>
+
+          <input name="date" type="date" value="" style="padding:10px;border-radius:8px;border:1px solid #ddd;">
+
+          <input name="seats" type="number" min="1" placeholder="Seats" value="<%= typeof seats !== 'undefined' && seats ? seats : '' %>" style="width:90px; padding:10px;border-radius:8px;border:1px solid #ddd;">
+
+          <button type="submit" class="btn" style="padding:10px 16px;">🔎 Search</button>
+          <a href="/" class="btn" style="background:linear-gradient(135deg,#e57373 0%,#ef5350 100%); text-decoration:none; display:inline-block; padding:10px 16px;">Clear</a>
+        </div>
+      </form>
       <% if (rides.length === 0) { %>
         <div class="no-rides">
           No rides available at the moment.<br>
