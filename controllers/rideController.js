@@ -74,6 +74,44 @@ exports.addRide = async (req, res) => {
 		res.status(500).send('Error adding ride');
 	}
 };
+exports.addRide = async (req, res) => {
+  try {
+    const { from, to, time, seats, price, driverName, contact } = req.body;
+    const fromLat = req.body.fromLat;
+    const fromLng = req.body.fromLng;
+    const toLat = req.body.toLat;
+    const toLng = req.body.toLng;
+
+    if (!from || !to || !time || !seats || !price || !driverName || !contact) {
+      return res.status(400).send('All fields required');
+    }
+
+    // One side must be campus
+    const normalizedFrom = String(from).trim().toLowerCase();
+    const normalizedTo = String(to).trim().toLowerCase();
+    const isCampusInvolved = normalizedFrom.includes('campus') || normalizedTo.includes('campus');
+    if(!isCampusInvolved) {
+      return res.status(400).send("One side must be 'campus'.");
+    }
+
+    const userId = req.user.id;
+    const ride = new Ride({
+      from, to, time,
+      seats: parseInt(seats,10),
+      price: parseFloat(price),
+      driver: userId,
+      driverName,
+      contact,
+      fromLat, fromLng, toLat, toLng
+    });
+    await ride.save();
+    res.redirect('/');
+  } catch(err) {
+    console.error(err);
+    res.status(500).send('Error adding ride');
+  }
+};
+
 
 // Get all rides for a driver (notifications)
 exports.getDriverNotifications = async (req, res) => {

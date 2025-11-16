@@ -296,6 +296,12 @@
             <input name="to" type="text" placeholder="Destination city" required>
           </div>
         </div>
+        <div class="form-group full-width">
+  <label>📍 Select Location on Map:</label>
+  <div id="map" style="height: 400px; width: 100%; margin-bottom: 10px;"></div>
+  <div id="distanceDisplay" style="font-weight:600; color:#2a3d66;"></div>
+</div>
+
         
         <div class="form-row">
           <div class="form-group">
@@ -328,67 +334,130 @@
         
         <button class="btn" type="submit">🚀 Create Ride</button>
       </form>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-      <script>
-        // Prefill campus field based on campusSide and campusLocation selectors.
-        const campusSideSelect = document.getElementById('campusSide');
-        const campusLocationSelect = document.getElementById('campusLocation');
-        const fromInput = document.querySelector('input[name="from"]');
-        const toInput = document.querySelector('input[name="to"]');
+<!-- Leaflet Geocoder (search bar) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
-        function applyCampusPrefill() {
-          const side = campusSideSelect.value; // 'from' or 'to'
-          const loc = campusLocationSelect.value; // e.g., 'Main Campus' or 'Other'
+   <script>
+  // Existing selectors
+  const campusSideSelect = document.getElementById('campusSide');
+  const campusLocationSelect = document.getElementById('campusLocation');
+  const fromInput = document.querySelector('input[name="from"]');
+  const toInput = document.querySelector('input[name="to"]');
 
-          if (loc === 'Other') {
-            // Allow manual input (remove readonly) and clear if it was prefilled
-            if (side === 'from') { fromInput.readOnly = false; if (fromInput.value === 'Campus' || fromInput.value.endsWith('Campus')) fromInput.value = ''; }
-            else { toInput.readOnly = false; if (toInput.value === 'Campus' || toInput.value.endsWith('Campus')) toInput.value = ''; }
-            return;
-          }
+  // Hidden inputs for lat/lng
+  let fromLatInput = document.createElement('input');
+  fromLatInput.type = 'hidden'; fromLatInput.name = 'fromLat';
+  let fromLngInput = document.createElement('input');
+  fromLngInput.type = 'hidden'; fromLngInput.name = 'fromLng';
+  let toLatInput = document.createElement('input');
+  toLatInput.type = 'hidden'; toLatInput.name = 'toLat';
+  let toLngInput = document.createElement('input');
+  toLngInput.type = 'hidden'; toLngInput.name = 'toLng';
+  document.querySelector('form').append(fromLatInput, fromLngInput, toLatInput, toLngInput);
 
-          // Prefill the appropriate field and make it readonly to prevent accidental edits.
-          if (side === 'from') {
-            fromInput.value = loc;
-            fromInput.readOnly = true;
-            // allow editing the destination
-            toInput.readOnly = false;
-          } else {
-            toInput.value = loc;
-            toInput.readOnly = true;
-            fromInput.readOnly = false;
-          }
-        }
+  // Prefill campus function
+  function applyCampusPrefill() {
+    const side = campusSideSelect.value;
+    const loc = campusLocationSelect.value;
 
-        campusSideSelect.addEventListener('change', applyCampusPrefill);
-        campusLocationSelect.addEventListener('change', applyCampusPrefill);
+    if (loc === 'Other') {
+      if (side === 'from') { fromInput.readOnly = false; if(fromInput.value.endsWith('Campus')) fromInput.value = ''; }
+      else { toInput.readOnly = false; if(toInput.value.endsWith('Campus')) toInput.value = ''; }
+      return;
+    }
 
-        // Initialize prefill on page load
-        window.addEventListener('DOMContentLoaded', () => {
-          applyCampusPrefill();
-        });
-        // Client-side form validation: ensure selected campus side has a value when 'Other' is chosen
-        const form = document.querySelector('form');
-        form.addEventListener('submit', (e) => {
-          const side = campusSideSelect.value;
-          const loc = campusLocationSelect.value;
-          if (loc === 'Other') {
-            if (side === 'from' && fromInput.value.trim() === '') {
-              e.preventDefault();
-              alert('Please enter the campus name in the From (City) field.');
-              fromInput.focus();
-              return false;
-            }
-            if (side === 'to' && toInput.value.trim() === '') {
-              e.preventDefault();
-              alert('Please enter the campus name in the To (City) field.');
-              toInput.focus();
-              return false;
-            }
-          }
-          // otherwise allow submit; backend will still validate presence of campus side
-        });
-      </script>
+    if (side === 'from') { fromInput.value = loc; fromInput.readOnly = true; toInput.readOnly = false; }
+    else { toInput.value = loc; toInput.readOnly = true; fromInput.readOnly = false; }
+  }
+
+  campusSideSelect.addEventListener('change', applyCampusPrefill);
+  campusLocationSelect.addEventListener('change', applyCampusPrefill);
+  window.addEventListener('DOMContentLoaded', applyCampusPrefill);
+
+  // Update coordinates (hidden inputs) & display human-readable value
+  function updateFromToCoordinates(lat, lng, name) {
+    const side = campusSideSelect.value;
+    if(side === 'from') {
+      toLatInput.value = lat;
+      toLngInput.value = lng;
+      toInput.value = name || `Selected Location`;
+    } else {
+      fromLatInput.value = lat;
+      fromLngInput.value = lng;
+      fromInput.value = name || `Selected Location`;
+    }
+  }
+
+  // Form validation
+  const form = document.querySelector('form');
+  form.addEventListener('submit', (e) => {
+    const side = campusSideSelect.value;
+    const loc = campusLocationSelect.value;
+
+    if (loc === 'Other') {
+      if (side === 'from' && fromInput.value.trim() === '') {
+        e.preventDefault(); alert('Please enter the campus name in From field'); fromInput.focus(); return false;
+      }
+      if (side === 'to' && toInput.value.trim() === '') {
+        e.preventDefault(); alert('Please enter the campus name in To field'); toInput.focus(); return false;
+      }
+    }
+
+    if (side === 'from' && (!toLatInput.value || !toLngInput.value) && loc === 'Other') {
+      e.preventDefault(); alert('Please select the other location on the map'); return false;
+    }
+    if (side === 'to' && (!fromLatInput.value || !fromLngInput.value) && loc === 'Other') {
+      e.preventDefault(); alert('Please select the other location on the map'); return false;
+    }
+  });
+
+  // Initialize map
+  const defaultCampusCoords = [28.6139, 77.2090]; // default central campus
+  const map = L.map('map').setView(defaultCampusCoords, 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+
+  // Campus marker
+  let campusMarker = L.marker(defaultCampusCoords).addTo(map).bindPopup("Campus").openPopup();
+
+  // User marker & polyline
+  let userMarker = null;
+  let polyline = null;
+
+  // Map click
+  map.on('click', async function(e) {
+    const { lat, lng } = e.latlng;
+    if(userMarker) map.removeLayer(userMarker);
+    userMarker = L.marker([lat, lng]).addTo(map).bindPopup("Selected Location").openPopup();
+
+    // Reverse geocode for readable name
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
+    const data = await response.json();
+    const name = data.address?.city || data.display_name || `Lat:${lat.toFixed(5)}, Lng:${lng.toFixed(5)}`;
+
+    updateFromToCoordinates(lat, lng, name);
+
+    // Draw line & distance
+    if(polyline) map.removeLayer(polyline);
+    polyline = L.polyline([defaultCampusCoords, [lat, lng]], { color: 'blue' }).addTo(map);
+    const distance = map.distance(defaultCampusCoords, [lat, lng]) / 1000;
+    document.getElementById('distanceDisplay').textContent = `Distance: ${distance.toFixed(2)} km`;
+  });
+
+  // Geocoder search
+  L.Control.geocoder({ defaultMarkGeocode: false })
+    .on('markgeocode', function(e) {
+      const center = e.geocode.center;
+      map.setView(center, 15);
+      map.fire('click', { latlng: center }); // reuse click logic
+    }).addTo(map);
+</script>
+
+
+      
       
       <div class="link-container">
         <a href="/">🔙 Back to all rides</a>
