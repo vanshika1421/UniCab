@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6.0
+    restart: unless-stopped
+    volumes:
+      - ./data/mongo:/data/db
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  app:
+    image: node:18-alpine
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app:delegated
+      - /usr/src/app/node_modules
+    command: sh -c "npm install --silent && node app.js"
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/unicab
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev_secret_change_me
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - FROM_EMAIL=${FROM_EMAIL}
+    depends_on:
+      - mongo
+      - redis
+
+  worker:
+    image: node:18-alpine
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app:delegated
+      - /usr/src/app/node_modules
+    command: sh -c "npm install --silent && node workers/notificationWorker.js"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/unicab
+      - REDIS_URL=redis://redis:6379
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - FROM_EMAIL=${FROM_EMAIL}
+    depends_on:
+      - redis
+      - mongo
+
+# Optional: persistent volumes are stored in ./data/

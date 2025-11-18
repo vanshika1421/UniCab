@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>UniCab - Profile</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f7fafc; padding:40px; }
+    .card { max-width:600px; margin:0 auto; background:white; padding:24px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.08); }
+    label { display:block; margin-bottom:6px; font-weight:600; }
+    input { width:100%; padding:10px 12px; margin-bottom:12px; border-radius:8px; border:1px solid #e2e8f0; }
+    .row { display:flex; gap:12px; }
+    .btn { padding:10px 16px; background:#4caf50; color:white; border:none; border-radius:8px; cursor:pointer; }
+    .msg { padding:10px; border-radius:8px; margin-bottom:12px; }
+    .success { background:#e6ffed; border:1px solid #c6f6d5; color:#22543d }
+    .error { background:#fff5f5; border:1px solid #fed7d7; color:#742a2a }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Profile</h2>
+    <% if (success) { %>
+      <div class="msg success"><%= success %></div>
+    <% } %>
+    <% if (error) { %>
+      <div class="msg error"><%= error %></div>
+    <% } %>
+    <form method="POST" action="/profile">
+      <label>Username</label>
+      <input type="text" name="username" value="<%= user.username %>" disabled>
+
+      <label>Email</label>
+      <input type="email" name="email" value="<%= user.email || '' %>">
+
+      <label>Contact (phone)</label>
+      <input type="text" name="contact" value="<%= user.contact || '' %>">
+
+      <label>Preferred contact</label>
+      <div class="row">
+        <label style="font-weight:600"><input type="radio" name="preferredContact" value="email" <%= (user.preferredContact||'email')==='email' ? 'checked' : '' %> > Email</label>
+        <label style="font-weight:600"><input type="radio" name="preferredContact" value="sms" <%= (user.preferredContact||'email')==='sms' ? 'checked' : '' %> > SMS</label>
+      </div>
+
+      <div style="margin-top:14px">
+        <button class="btn" type="submit">Save profile</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

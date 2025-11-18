@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Send Notification</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f7fafc; padding: 30px; }
+    .card { max-width:700px; margin:0 auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+    label { display:block; margin-top:12px; font-weight:600; }
+    input[type=text], textarea { width:100%; padding:10px; border-radius:6px; border:1px solid #ddd; }
+    .row { display:flex; gap:8px; margin-top:12px; }
+    .btn { margin-top:14px; padding:10px 16px; border-radius:8px; background:#1976d2; color:#fff; border:none; cursor:pointer; }
+    .small { font-size:0.9em; color:#666; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Send Notification</h2>
+    <form method="POST" action="/notifications/send">
+      <input type="hidden" name="bookingId" value="<%= bookingId %>">
+
+      <label for="method">Method</label>
+      <div class="row">
+        <label style="font-weight:600;"><input type="radio" name="method" value="email" <%= method==='email'? 'checked' : '' %> > Email</label>
+        <label style="font-weight:600;"><input type="radio" name="method" value="sms" <%= method==='sms'? 'checked' : '' %> > SMS</label>
+      </div>
+
+      <label for="to">Recipient (email or phone)</label>
+      <input type="text" name="to" value="<%= email || phone || '' %>" placeholder="Email or phone number">
+      <div class="small">You can edit the recipient before sending.</div>
+
+      <label for="message">Message</label>
+      <textarea name="message" rows="6"><%= message %></textarea>
+
+      <button class="btn" type="submit">Send</button>
+    </form>
+    <p class="small">Note: this will enqueue a background job to send the notification.</p>
+  </div>
+</body>
+</html>
