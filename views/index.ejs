@@ -282,62 +282,169 @@
     </div>
     
     <div class="content">
-      <form method="GET" action="/" style="margin-bottom:20px; max-width:760px; background:linear-gradient(180deg,#ffffffcc,#f7fbff); padding:14px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06);">
-        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-          <div style="display:flex; gap:8px; align-items:center;">
-            <label style="font-weight:600; margin-right:6px;"><input type="radio" name="mode" value="from" <%= (typeof mode !== 'undefined' && mode === 'from') ? 'checked' : '' %> > Departing from (e.g., Campus → City)</label>
-            <label style="font-weight:600; margin-right:6px;"><input type="radio" name="mode" value="to" <%= (typeof mode !== 'undefined' && mode === 'to') ? 'checked' : '' %> > Arriving to (e.g., City → Campus)</label>
+      <% if (user) { %>
+        <form method="GET" action="/" style="margin-bottom:20px; max-width:760px; background:linear-gradient(180deg,#ffffffcc,#f7fbff); padding:14px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <label style="font-weight:600; margin-right:6px;"><input type="radio" name="mode" value="from" <%= (typeof mode !== 'undefined' && mode === 'from') ? 'checked' : '' %> > Departing from (e.g., Campus → City)</label>
+              <label style="font-weight:600; margin-right:6px;"><input type="radio" name="mode" value="to" <%= (typeof mode !== 'undefined' && mode === 'to') ? 'checked' : '' %> > Arriving to (e.g., City → Campus)</label>
+            </div>
+
+            <input id="fromInput" name="from" type="text" placeholder="From (city or campus)" value="<%= typeof from !== 'undefined' ? from : '' %>" style="flex:1; padding:10px 12px; border-radius:8px; border:1px solid #ddd; font-size:14px;">
+            <input id="toInput" name="to" type="text" placeholder="To (city or campus)" value="<%= typeof to !== 'undefined' ? to : '' %>" style="flex:1; padding:10px 12px; border-radius:8px; border:1px solid #ddd; font-size:14px;">
+
+            <select name="campusLocation" style="padding:10px;border-radius:8px;border:1px solid #ddd;">
+              <option value="">— Campus (optional) —</option>
+              <option value="Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'Campus') ? 'selected' : '' %>>Campus (generic)</option>
+              <option value="Main Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'Main Campus') ? 'selected' : '' %>>Main Campus</option>
+              <option value="North Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'North Campus') ? 'selected' : '' %>>North Campus</option>
+              <option value="South Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'South Campus') ? 'selected' : '' %>>South Campus</option>
+              <option value="Other" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'Other') ? 'selected' : '' %>>Other (type in box)</option>
+            </select>
+            <input id="otherCampusInput" name="otherCampus" type="text" placeholder="Type campus name" value="" style="display:none; padding:10px;border-radius:8px;border:1px solid #ddd; margin-left:6px;">
+
+            <input name="date" type="date" value="" style="padding:10px;border-radius:8px;border:1px solid #ddd;">
+
+            <input name="seats" type="number" min="1" placeholder="Seats" value="<%= typeof seats !== 'undefined' && seats ? seats : '' %>" style="width:90px; padding:10px;border-radius:8px;border:1px solid #ddd;">
+
+            <button type="submit" class="btn" style="padding:10px 16px;">🔎 Search</button>
+            <a href="/" class="btn" style="background:linear-gradient(135deg,#e57373 0%,#ef5350 100%); text-decoration:none; display:inline-block; padding:10px 16px;">Clear</a>
           </div>
+        </form>
+        <script>
+          // Auto-fill visible from/to fields based on mode and campusLocation selection.
+          const modeRadios = document.querySelectorAll('input[name="mode"]');
+          const campusSelect = document.querySelector('select[name="campusLocation"]');
+          const fromInput = document.getElementById('fromInput');
+          const toInput = document.getElementById('toInput');
+          const otherCampusInput = document.getElementById('otherCampusInput');
 
-          <input name="q" type="search" placeholder="City or campus" value="<%= typeof q !== 'undefined' ? q : '' %>" style="flex:1; padding:10px 12px; border-radius:8px; border:1px solid #ddd; font-size:14px;">
+          function updateVisibleFields() {
+            const mode = Array.from(modeRadios).find(r => r.checked)?.value || '';
+            let campus = campusSelect.value || '';
 
-          <select name="campusLocation" style="padding:10px;border-radius:8px;border:1px solid #ddd;">
-            <option value="">— Campus (optional) —</option>
-            <option value="Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'Campus') ? 'selected' : '' %>>Campus (generic)</option>
-            <option value="Main Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'Main Campus') ? 'selected' : '' %>>Main Campus</option>
-            <option value="North Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'North Campus') ? 'selected' : '' %>>North Campus</option>
-            <option value="South Campus" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'South Campus') ? 'selected' : '' %>>South Campus</option>
-            <option value="Other" <%= (typeof campusLocation !== 'undefined' && campusLocation === 'Other') ? 'selected' : '' %>>Other (type in box)</option>
-          </select>
+            if (!campus && (mode === 'from' || mode === 'to')) {
+              const firstCampusOpt = Array.from(campusSelect.options).find(o => o.value && o.value !== 'Other');
+              if (firstCampusOpt) {
+                campusSelect.value = firstCampusOpt.value;
+                campus = firstCampusOpt.value;
+              }
+            }
 
-          <input name="date" type="date" value="" style="padding:10px;border-radius:8px;border:1px solid #ddd;">
+            if (mode === 'from') {
+              if (campus && campus !== 'Other') {
+                fromInput.value = campus;
+                fromInput.readOnly = true;
+                fromInput.style.background = '#f3f6ff';
+                otherCampusInput.style.display = 'none';
+              } else if (campus === 'Other') {
+                otherCampusInput.style.display = 'inline-block';
+                otherCampusInput.style.width = '220px';
+                fromInput.readOnly = false;
+                fromInput.style.background = '';
+                fromInput.value = otherCampusInput.value || '';
+              } else {
+                fromInput.readOnly = false;
+                fromInput.style.background = '';
+                otherCampusInput.style.display = 'none';
+              }
+              toInput.readOnly = false;
+              if (!toInput.value) toInput.placeholder = 'To (city or campus)';
+            } else if (mode === 'to') {
+              if (campus && campus !== 'Other') {
+                toInput.value = campus;
+                toInput.readOnly = true;
+                toInput.style.background = '#f3f6ff';
+                otherCampusInput.style.display = 'none';
+              } else if (campus === 'Other') {
+                otherCampusInput.style.display = 'inline-block';
+                otherCampusInput.style.width = '220px';
+                toInput.readOnly = false;
+                toInput.style.background = '';
+                toInput.value = otherCampusInput.value || '';
+              } else {
+                toInput.readOnly = false;
+                toInput.style.background = '';
+                otherCampusInput.style.display = 'none';
+              }
+              fromInput.readOnly = false;
+              if (!fromInput.value) fromInput.placeholder = 'From (city or campus)';
+            } else {
+              fromInput.readOnly = false; toInput.readOnly = false;
+              fromInput.style.background = ''; toInput.style.background = '';
+              otherCampusInput.style.display = 'none';
+            }
+          }
 
-          <input name="seats" type="number" min="1" placeholder="Seats" value="<%= typeof seats !== 'undefined' && seats ? seats : '' %>" style="width:90px; padding:10px;border-radius:8px;border:1px solid #ddd;">
+          modeRadios.forEach(r => r.addEventListener('change', updateVisibleFields));
+          campusSelect.addEventListener('change', updateVisibleFields);
+          otherCampusInput.addEventListener('input', function() {
+            const val = this.value || '';
+            const mode = Array.from(modeRadios).find(r => r.checked)?.value || '';
+            if (mode === 'from') {
+              fromInput.value = val;
+              fromInput.readOnly = false;
+              fromInput.style.background = '';
+            } else if (mode === 'to') {
+              toInput.value = val;
+              toInput.readOnly = false;
+              toInput.style.background = '';
+            }
+          });
 
-          <button type="submit" class="btn" style="padding:10px 16px;">🔎 Search</button>
-          <a href="/" class="btn" style="background:linear-gradient(135deg,#e57373 0%,#ef5350 100%); text-decoration:none; display:inline-block; padding:10px 16px;">Clear</a>
-        </div>
-      </form>
-      <% if (rides.length === 0) { %>
-        <div class="no-rides">
-          No rides available at the moment.<br>
-          <small>Check back later or add a new ride!</small>
-        </div>
+          updateVisibleFields();
+        </script>
+
+        <% if (!searched) { %>
+          <div style="text-align:center; padding:40px; border-radius:12px; background:linear-gradient(180deg,#fff,#fbfdff); box-shadow:0 6px 20px rgba(0,0,0,0.04);">
+            <h2 style="margin-bottom:10px; color:#1e3a8a;">Find your ride</h2>
+            <p style="color:#475569; margin-bottom:12px;">Enter where you're leaving from or going to, pick a campus (optional), choose a date and seats — then tap Search to see matching rides.</p>
+            <small style="color:#94a3b8">No results shown until you perform a search.</small>
+          </div>
+        <% } else { %>
+          <% if (rides.length === 0) { %>
+            <div class="no-rides">
+              No rides match your search.<br>
+              <small>Try broadening the location or reducing the minimum seats.</small>
+            </div>
+          <% } else { %>
+            <ul>
+              <% rides.forEach(function(ride, idx) { %>
+                <li>
+                  <div class="ride-info">
+                    <div style="font-size: 1.2em; margin-bottom: 8px;">
+                      <b><%= ride.from %></b> ➡️ <b><%= ride.to %></b>
+                    </div>
+                    <div>
+                      🕐 <b><%= ride.time %></b> | 💺 <b><%= ride.seats %></b> seats available | 💰 <b>₹<%= ride.price %></b> per seat
+                    </div>
+                  </div>
+                  <div class="driver-info">
+                    👨‍💼 Driver: <b><%= ride.driverName %></b> | 📞 <%= ride.contact %>
+                  </div>
+                  <% if (user) { %>
+                    <form method="POST" action="/book/<%= ride._id %>" style="display:inline">
+                      <button class="btn" <%= ride.seats < 1 ? 'disabled' : '' %>>
+                        <%= ride.seats < 1 ? '🚫 Full' : '🎫 Book Now' %>
+                      </button>
+                    </form>
+                  <% } %>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        <% } %>
       <% } else { %>
-        <ul>
-          <% rides.forEach(function(ride, idx) { %>
-            <li>
-              <div class="ride-info">
-                <div style="font-size: 1.2em; margin-bottom: 8px;">
-                  <b><%= ride.from %></b> ➡️ <b><%= ride.to %></b>
-                </div>
-                <div>
-                  🕐 <b><%= ride.time %></b> | 💺 <b><%= ride.seats %></b> seats available | 💰 <b>₹<%= ride.price %></b> per seat
-                </div>
-              </div>
-              <div class="driver-info">
-                👨‍💼 Driver: <b><%= ride.driverName %></b> | 📞 <%= ride.contact %>
-              </div>
-              <% if (user) { %>
-                <form method="POST" action="/book/<%= ride._id %>" style="display:inline">
-                  <button class="btn" <%= ride.seats < 1 ? 'disabled' : '' %>>
-                    <%= ride.seats < 1 ? '🚫 Full' : '🎫 Book Now' %>
-                  </button>
-                </form>
-              <% } %>
-            </li>
-          <% }) %>
-        </ul>
+        <div style="max-width:720px; margin:30px auto; display:flex; justify-content:center;">
+          <div style="width:100%; text-align:center; padding:30px; border-radius:12px; background:#ffffff; box-shadow:0 8px 30px rgba(0,0,0,0.06); border:1px solid #eef2ff;">
+            <h2 style="color:#1e3a8a; margin-bottom:12px;">Welcome to UniCab</h2>
+            <p style="color:#475569; margin-bottom:16px;">Please log in or register to search and book rides.</p>
+            <div style="display:flex; gap:12px; justify-content:center;">
+              <a href="/login" class="btn" style="background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%);">🔑 Login</a>
+              <a href="/register" class="btn" style="background:linear-gradient(135deg,#10b981 0%,#34d399 100%);">📝 Register</a>
+            </div>
+          </div>
+        </div>
       <% } %>
     </div>
   </div>
