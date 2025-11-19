@@ -25,9 +25,13 @@
       </div>
 
       <div class="meta" style="margin-top:18px">
+        <% 
+          // Determine booked seats (default to 1 if not stored on booking)
+          const bookedSeats = (typeof booking.seats !== 'undefined' && booking.seats) ? booking.seats : 1;
+        %>
         <% if (booking.ride) { %>
           <div><strong>Route:</strong> <%= booking.ride.from %> → <%= booking.ride.to %></div>
-          <div class="small">Time: <%= booking.ride.time || 'N/A' %> • Seats: <%= booking.ride.seats || 'N/A' %></div>
+          <div class="small">Time: <%= booking.ride.time || 'N/A' %> • Seats: <%= bookedSeats %></div>
         <% } %>
       </div>
 
@@ -36,12 +40,12 @@
         const rate = (typeof conversionRate !== 'undefined' && conversionRate) ? conversionRate : 83;
         let displayInr = null;
         if (booking.amount != null) {
-          // booking.amount is smallest unit (cents)
+          // booking.amount is smallest unit (cents) and expected to represent the total for the booking
           const usd = (booking.amount / 100);
           displayInr = (usd * rate).toFixed(2);
         } else if (booking.ride && booking.ride.price != null) {
-          // ride.price is stored as rupees already in most of app; treat as INR
-          displayInr = Number(booking.ride.price).toFixed(2);
+          // ride.price is per-seat in INR; multiply by booked seats
+          displayInr = (Number(booking.ride.price) * bookedSeats).toFixed(2);
         }
       %>
 
