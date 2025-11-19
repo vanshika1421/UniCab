@@ -60,3 +60,17 @@ services:
       - mongo
 
 # Optional: persistent volumes are stored in ./data/
+  ws:
+    image: node:18-alpine
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app:delegated
+      - /usr/src/app/node_modules
+    command: sh -c "npm install --silent && node ws-service/index.js"
+    ports:
+      - "7000:7000"
+    environment:
+      - WS_PORT=7000
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
