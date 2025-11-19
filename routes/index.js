@@ -47,8 +47,10 @@ router.get('/receipt/:id', async (req, res) => {
     doc.moveDown();
     doc.text(`Rider: ${booking.rider ? (booking.rider.username || booking.rider.toString()) : 'N/A'}`);
     doc.text(`Payment Status: ${booking.paymentStatus || 'none'}`);
-    const amount = booking.amount != null ? (booking.amount / 100).toFixed(2) : (booking.ride && booking.ride.price ? booking.ride.price : 'N/A');
+    const seatsCount = (typeof booking.seats !== 'undefined' && booking.seats) ? booking.seats : 1;
+    const amount = booking.amount != null ? (booking.amount / 100).toFixed(2) : (booking.ride && booking.ride.price ? (booking.ride.price * seatsCount).toFixed(2) : 'N/A');
     doc.text(`Amount: ${amount} ${booking.currency || 'USD'}`);
+    doc.text(`Seats booked: ${seatsCount}`);
     if (booking.transactionId) doc.text(`Transaction ID: ${booking.transactionId}`);
     if (booking.payerName) doc.text(`Payer: ${booking.payerName}`);
     if (booking.payerAddress) doc.text(`Payer Address: ${booking.payerAddress}`);

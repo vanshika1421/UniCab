@@ -49,16 +49,23 @@ exports.bookRide = async (req, res) => {
 		}
 		
 		const ride = await Ride.findById(req.params.rideId);
-		if (!ride || ride.seats < 1) {
-			return res.status(400).send('No seats available');
+		if (!ride) {
+			return res.status(400).send('Ride not found');
+		}
+
+		// Determine how many seats the user requested (default 1)
+		const requestedSeats = req.body && req.body.seats ? parseInt(req.body.seats, 10) : (req.query && req.query.seats ? parseInt(req.query.seats, 10) : 1);
+		const seatsToBook = (!isNaN(requestedSeats) && requestedSeats > 0) ? requestedSeats : 1;
+		if (ride.seats < seatsToBook) {
+			return res.status(400).send('Not enough seats available');
 		}
 		
 		// Get user from JWT token
 		const userId = req.user.id;
 		
-		ride.seats -= 1;
+		ride.seats -= seatsToBook;
 		await ride.save();
-		const booking = new Booking({ rider: userId, ride: ride._id });
+		const booking = new Booking({ rider: userId, ride: ride._id, seats: seatsToBook });
 		await booking.save();
 
 		// Invalidate cached rides list

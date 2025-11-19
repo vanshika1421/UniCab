@@ -15,6 +15,7 @@ const bookingSchema = new mongoose.Schema({
     enum: ['none', 'requires_capture', 'captured', 'failed'],
     default: 'none'
   },
+  seats: { type: Number, default: 1 },
   paymentIntentId: { type: String },
   transactionId: { type: String },
   receiptUrl: { type: String },

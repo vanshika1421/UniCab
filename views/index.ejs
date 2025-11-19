@@ -424,6 +424,7 @@
                   </div>
                   <% if (user) { %>
                     <form method="POST" action="/book/<%= ride._id %>" style="display:inline">
+                      <input name="seats" type="number" min="1" max="<%= ride.seats %>" value="1" style="width:68px; margin-right:8px; padding:6px; border-radius:6px; border:1px solid #ddd;" />
                       <button class="btn" <%= ride.seats < 1 ? 'disabled' : '' %>>
                         <%= ride.seats < 1 ? '🚫 Full' : '🎫 Book Now' %>
                       </button>
