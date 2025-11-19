@@ -301,6 +301,7 @@
               <% } else if (ps === 'succeeded' || ps === 'captured' || ps === 'paid') { %>
                 <div style="margin-left:12px; font-weight:600; color:#2e7d32">Payment: Paid</div>
                 <a href="/receipt/<%= booking._id %>" style="margin-left:10px; font-weight:600; color:#1976d2; text-decoration:none">View receipt</a>
+                <a href="/feedback/<%= booking._id %>" style="margin-left:10px; font-weight:600; color:#ff9800; text-decoration:none">Give Feedback</a>
               <% } else { %>
                 <div style="margin-left:12px; font-weight:600">Payment: <%= ps %></div>
               <% } %>
