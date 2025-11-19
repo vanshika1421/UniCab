@@ -1,67 +1,54 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
-const { createServer } = http;
 const { Server } = require('socket.io');
-const { client: ioredisClient, sub } = require('../lib/redisClient');
 const { createAdapter } = require('@socket.io/redis-adapter');
 
+// Import Redis clients (ioredis auto-connects)
+const { client, pub, sub } = require('../lib/redisClient');
+
 const app = express();
-const server = createServer(app);
+const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
+  cors: { origin: "*" },
+  pingInterval: 25000,
+  pingTimeout: 60000,
 });
 
-// Use redis adapter so it can scale later (requires two connections)
-const pubClient = ioredisClient.duplicate();
-const subClient = ioredisClient.duplicate();
-Promise.all([pubClient.connect().catch(()=>{}), subClient.connect().catch(()=>{})]).then(()=>{
-  io.adapter(createAdapter(pubClient, subClient));
-}).catch(err => {
-  console.warn('Redis adapter connection warning:', err && err.message ? err.message : err);
-});
+// ioredis → NO connect() needed
+io.adapter(createAdapter(pub, sub));
+console.log("Socket.IO Redis adapter initialized");
 
-io.on('connection', (socket) => {
-  console.log('WS client connected:', socket.id);
+// Channels
+sub.subscribe("booking.created");
+sub.subscribe("ride.updated");
+sub.subscribe("notification.sent");
+sub.subscribe("payment.captured");
 
-  socket.on('joinRoom', (room) => {
-    socket.join(room);
-  });
-
-  socket.on('leaveRoom', (room) => {
-    socket.leave(room);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('WS client disconnected:', socket.id);
-  });
-});
-
-// Subscribe to pubsub channels from API
-sub.subscribe('booking.created', 'ride.updated', 'notification.sent', 'payment.captured', (err, count) => {
-  if (err) {
-    console.error('Failed to subscribe: ', err.message);
-  } else {
-    console.log('Subscribed to Redis channels for real-time updates');
-  }
-});
-
-sub.on('message', (channel, message) => {
+sub.on("message", (channel, message) => {
   try {
     const payload = JSON.parse(message);
-    // Emit event to all clients; for more control you can emit to rooms
     io.emit(channel, payload);
-    console.log('Emitted', channel, '->', payload);
+    console.log(`WS Emit → ${channel}`, payload);
   } catch (err) {
-    console.warn('Failed to parse redis message:', err.message);
+    console.error("Invalid redis message:", err.message);
   }
+});
+
+// WS connection events
+io.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+
+  socket.on("joinRoom", (room) => socket.join(room));
+  socket.on("leaveRoom", (room) => socket.leave(room));
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  });
 });
 
 const PORT = process.env.WS_PORT || 7000;
 server.listen(PORT, () => {
-  console.log(`WebSocket service running on port ${PORT}`);
+  console.log(`WebSocket Service running on port ${PORT}`);
 });
