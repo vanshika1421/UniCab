@@ -62,6 +62,9 @@ app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/driver'));
 app.use('/', require('./routes/rider'));
 app.use('/', require('./routes/api'));
+const feedbackRoutes = require('./routes/feedback');
+app.use('/feedback', feedbackRoutes);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
