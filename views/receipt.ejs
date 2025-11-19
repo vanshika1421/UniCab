@@ -4,18 +4,49 @@
     <meta charset="utf-8" />
     <title>Payment Receipt</title>
     <style>
-      body { font-family: Arial, sans-serif; padding: 20px; }
-      .receipt { max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; }
-      .amount { font-size: 1.5em; font-weight: bold; }
+      body { font-family: Arial, sans-serif; padding: 20px; background:#fafafa }
+      .receipt { max-width: 720px; margin: 20px auto; border: 1px solid #eee; padding: 26px; background:white; box-shadow:0 8px 30px rgba(0,0,0,0.05); border-radius:8px }
+      .receipt .header { display:flex; align-items:center; gap:16px }
+      .logo { width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,#ffd54f,#ff9800); display:flex; align-items:center; justify-content:center; font-weight:800; color:white; font-size:22px }
+      h2 { margin:0; font-size:22px }
+      .meta { margin-top:12px; color:#555 }
+      .amount { font-size:1.6em; font-weight:700; color:#111; margin-top:10px }
+      .small { color:#666; font-size:0.95em }
     </style>
   </head>
   <body>
     <div class="receipt">
-      <h2>Payment Receipt</h2>
-      <p><strong>Booking ID:</strong> <%= booking._id %></p>
-      <p><strong>Ride ID:</strong> <%= booking.ride %></p>
-      <p><strong>Amount:</strong> <span class="amount"><%= (booking.amount || 0) / 100 %> <%= booking.currency || 'USD' %></span></p>
-      <p><strong>Status:</strong> <%= booking.paymentStatus %></p>
+      <div class="header">
+        <div class="logo">₹</div>
+        <div>
+          <h2>Payment Receipt</h2>
+          <div class="meta small">Booking ID: <%= booking._id %></div>
+        </div>
+      </div>
+
+      <div class="meta" style="margin-top:18px">
+        <% if (booking.ride) { %>
+          <div><strong>Route:</strong> <%= booking.ride.from %> → <%= booking.ride.to %></div>
+          <div class="small">Time: <%= booking.ride.time || 'N/A' %> • Seats: <%= booking.ride.seats || 'N/A' %></div>
+        <% } %>
+      </div>
+
+      <% 
+        // Compute amount in INR for display. If booking.amount is present it's assumed to be cents (amount/100 = USD)
+        const rate = (typeof conversionRate !== 'undefined' && conversionRate) ? conversionRate : 83;
+        let displayInr = null;
+        if (booking.amount != null) {
+          // booking.amount is smallest unit (cents)
+          const usd = (booking.amount / 100);
+          displayInr = (usd * rate).toFixed(2);
+        } else if (booking.ride && booking.ride.price != null) {
+          // ride.price is stored as rupees already in most of app; treat as INR
+          displayInr = Number(booking.ride.price).toFixed(2);
+        }
+      %>
+
+      <div class="amount">Amount: <%= displayInr ? '₹' + displayInr : 'N/A' %></div>
+      <div style="margin-top:8px"><strong>Status:</strong> <%= booking.paymentStatus %></div>
       <% if (booking.receiptUrl) { %>
         <p><a href="<%= booking.receiptUrl %>" target="_blank">View official receipt</a></p>
       <% } %>
