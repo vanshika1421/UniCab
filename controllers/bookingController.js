@@ -91,7 +91,8 @@ exports.getMyBookings = async (req, res) => {
 		// Get user from JWT token
 		const userId = req.user.id;
 		const bookings = await Booking.find({ rider: userId }).populate('ride');
-		res.render('mybookings', { bookings });
+		// Pass Stripe publishable key to the view for client-side Stripe.js
+		res.render('mybookings', { bookings, stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '' });
 	} catch (error) {
 		console.error('Error fetching bookings:', error);
 		res.status(500).send('Error fetching bookings');

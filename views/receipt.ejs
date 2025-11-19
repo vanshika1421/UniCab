@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Payment Receipt</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 20px; }
+      .receipt { max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; }
+      .amount { font-size: 1.5em; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <div class="receipt">
+      <h2>Payment Receipt</h2>
+      <p><strong>Booking ID:</strong> <%= booking._id %></p>
+      <p><strong>Ride ID:</strong> <%= booking.ride %></p>
+      <p><strong>Amount:</strong> <span class="amount"><%= (booking.amount || 0) / 100 %> <%= booking.currency || 'USD' %></span></p>
+      <p><strong>Status:</strong> <%= booking.paymentStatus %></p>
+      <% if (booking.receiptUrl) { %>
+        <p><a href="<%= booking.receiptUrl %>" target="_blank">View official receipt</a></p>
+      <% } %>
+      <p><a href="/mybookings">Back to my bookings</a></p>
+    </div>
+  </body>
+</html>

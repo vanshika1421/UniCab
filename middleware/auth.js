@@ -6,6 +6,10 @@ const authenticateToken = (req, res, next) => {
   const token = req.cookies.token;
   
   if (!token) {
+    // If this is an API/XHR request, return JSON 401 so client can handle it
+    if (req.path && req.path.startsWith('/api')) {
+      return res.status(401).json({ success: false, error: 'Not authenticated' });
+    }
     return res.redirect('/login');
   }
 
@@ -19,6 +23,9 @@ const authenticateToken = (req, res, next) => {
   } catch (error) {
     console.error('Token verification failed:', error);
     res.clearCookie('token');
+    if (req.path && req.path.startsWith('/api')) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
     return res.redirect('/login');
   }
 };
