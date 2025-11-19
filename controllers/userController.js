@@ -7,37 +7,37 @@ const config = require('../config/default');
 // Register a new user
 exports.register = async (req, res) => {
 	try {
-		const { username, password, role, driverName, contact } = req.body;
-		
+		const { username, email, password, role, driverName, contact } = req.body;
+
 		// Debug log
-		console.log('🔍 Registration attempt:', { username, role, driverName, contact });
-		
+		console.log('🔍 Registration attempt:', { username, email, role, driverName, contact });
+
 		if (!username || !password || !role) {
 			console.log('❌ Missing required fields');
 			return res.render('register', { error: 'All fields required' });
 		}
-		
-		// Check if user already exists (case-insensitive)
-		console.log('🔍 Checking if user exists:', username);
-		const existing = await User.findOne({ 
-			username: { $regex: new RegExp(`^${username}$`, 'i') } 
-		});
+
+		// Check if username or email already exists (case-insensitive)
+		console.log('🔍 Checking if username/email exists:', username, email);
+		const orChecks = [ { username: { $regex: new RegExp(`^${username}$`, 'i') } } ];
+		if (email) orChecks.push({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
+		const existing = await User.findOne({ $or: orChecks });
 		console.log('🔍 User exists?', existing ? 'YES' : 'NO');
-		
+
 		if (existing) {
-			console.log('❌ User already exists:', username);
-			return res.render('register', { error: 'Username already exists' });
+			console.log('❌ Username or email already exists:', username, email);
+			return res.render('register', { error: 'Username or email already exists' });
 		}
-		
+
 		// Hash password
 		console.log('🔐 Hashing password...');
 		const hash = await bcrypt.hash(password, 10);
 		console.log('🔐 Password hashed successfully');
-		
-		const user = new User({ username, password: hash, role, driverName, contact });
+
+		const user = new User({ username, email, password: hash, role, driverName, contact });
 		await user.save();
 		console.log('✅ User saved successfully:', user._id);
-		
+
 		// Generate JWT token
 		const payload = {
 			user: {
@@ -46,16 +46,16 @@ exports.register = async (req, res) => {
 				role: user.role
 			}
 		};
-		
+
 		const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '24h' });
-		
+
 		// Set JWT as httpOnly cookie
-		res.cookie('token', token, { 
-			httpOnly: true, 
+		res.cookie('token', token, {
+			httpOnly: true,
 			secure: process.env.NODE_ENV === 'production',
 			maxAge: 24 * 60 * 60 * 1000 // 24 hours
 		});
-		
+
 		res.redirect('/');
 	} catch (error) {
 		console.error('Registration error:', error);

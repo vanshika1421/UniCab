@@ -20,7 +20,8 @@ router.get('/receipt/:id', async (req, res) => {
 
     // If client explicitly asks for HTML view, render the EJS template
     if (req.query.view === 'html' || req.headers.accept && req.headers.accept.indexOf('text/html') !== -1 && !req.query.pdf) {
-      return res.render('receipt', { booking });
+      const conv = parseFloat(process.env.USD_TO_INR || '83');
+      return res.render('receipt', { booking, conversionRate: conv });
     }
 
     // If PDF generator not available, fall back to HTML view
