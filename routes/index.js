@@ -2,6 +2,65 @@ const express = require('express');
 const router = express.Router();
 const Ride = require('../models/Ride');
 const Booking = require('../models/Booking');
+let PDFDocument = null;
+try {
+  PDFDocument = require('pdfkit');
+} catch (err) {
+  console.warn('pdfkit not available — PDF receipt generation disabled. Install with `npm install pdfkit` to enable.');
+}
+
+// Receipt PDF generator
+router.get('/receipt/:id', async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(bookingId)) return res.status(400).send('Invalid booking id');
+    const booking = await Booking.findById(bookingId).populate('ride').populate('rider');
+    if (!booking) return res.status(404).send('Booking not found');
+
+    // If client explicitly asks for HTML view, render the EJS template
+    if (req.query.view === 'html' || req.headers.accept && req.headers.accept.indexOf('text/html') !== -1 && !req.query.pdf) {
+      return res.render('receipt', { booking });
+    }
+
+    // If PDF generator not available, fall back to HTML view
+    if (!PDFDocument) {
+      return res.render('receipt', { booking });
+    }
+
+    // Generate PDF receipt
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="receipt-${booking._id}.pdf"`);
+    doc.pipe(res);
+
+    doc.fontSize(20).text('UniCab - Payment Receipt', { align: 'center' });
+    doc.moveDown();
+
+    doc.fontSize(12).text(`Receipt ID: ${booking._id}`);
+    doc.text(`Booking Date: ${booking.bookedAt ? new Date(booking.bookedAt).toLocaleString() : 'N/A'}`);
+    if (booking.ride) {
+      doc.text(`Route: ${booking.ride.from} → ${booking.ride.to}`);
+      doc.text(`Driver: ${booking.ride.driverName || booking.ride.driver}`);
+    }
+    doc.moveDown();
+    doc.text(`Rider: ${booking.rider ? (booking.rider.username || booking.rider.toString()) : 'N/A'}`);
+    doc.text(`Payment Status: ${booking.paymentStatus || 'none'}`);
+    const amount = booking.amount != null ? (booking.amount / 100).toFixed(2) : (booking.ride && booking.ride.price ? booking.ride.price : 'N/A');
+    doc.text(`Amount: ${amount} ${booking.currency || 'USD'}`);
+    if (booking.transactionId) doc.text(`Transaction ID: ${booking.transactionId}`);
+    if (booking.payerName) doc.text(`Payer: ${booking.payerName}`);
+    if (booking.payerAddress) doc.text(`Payer Address: ${booking.payerAddress}`);
+    if (booking.upiId) doc.text(`UPI / VPA: ${booking.upiId}`);
+
+    doc.moveDown();
+    doc.text('Thank you for using UniCab!', { align: 'center' });
+    doc.end();
+  } catch (err) {
+    console.error('Error generating receipt PDF', err);
+    return res.status(500).send('Error generating receipt');
+  }
+});
 router.get('/', async (req, res) => {
   try {
     const q = req.query.q ? String(req.query.q).trim() : '';

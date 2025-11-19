@@ -3,6 +3,7 @@ const router = express.Router();
 const { requireLogin } = require('../middleware/auth');
 const jwt = require('jsonwebtoken');
 const config = require('../config/default');
+const paymentController = require('../controllers/paymentController');
 
 // Get current token info (for debugging)
 router.get('/api/token-info', requireLogin, (req, res) => {
@@ -65,5 +66,9 @@ router.get('/api/rides', async (req, res) => {
     });
   }
 });
+// Payment endpoints
+router.post('/api/bookings/:bookingId/create-payment-intent', requireLogin, paymentController.createPaymentIntent);
+router.post('/api/bookings/:bookingId/capture-payment', requireLogin, paymentController.capturePayment);
+router.post('/api/bookings/:bookingId/simulate-gpay', requireLogin, paymentController.simulateGPayCapture);
 
 module.exports = router;

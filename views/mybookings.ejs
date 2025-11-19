@@ -191,6 +191,27 @@
     .cancel-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,71,87,0.5); }
     .cancel-btn:active { transform: translateY(0px); }
 
+    /* Primary pay button (blue pill) */
+    .pay-btn {
+      background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+      color: white;
+      border: none;
+      padding: 12px 26px;
+      border-radius: 28px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 8px 30px rgba(0,118,255,0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .pay-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,118,255,0.32); }
+    .pay-btn:active { transform: translateY(0); }
+
     .no-bookings {
       text-align: center;
       padding: 60px 20px;
@@ -256,11 +277,200 @@
               <form action="/cancel-booking/<%= booking._id %>" method="POST" style="display:inline">
                 <button type="submit" class="cancel-btn">❌ Cancel</button>
               </form>
+              <% 
+                const ps = booking.paymentStatus || 'none';
+                if (ps === 'none') { 
+              %>
+                <button class="pay-btn" data-booking-id="<%= booking._id %>" style="margin-left:8px">💳 PAY</button>
+              <% } else if (ps === 'requires_capture') { %>
+                <div style="margin-left:12px; font-weight:600">Payment: Authorized — awaiting capture</div>
+                <% 
+                  const isDriver = (typeof role !== 'undefined' && role === 'driver' && booking.ride && booking.ride.driver && booking.ride.driver.toString() === userId);
+                  const isRider = (typeof role !== 'undefined' && role === 'rider' && booking.rider && booking.rider.toString() === userId);
+                %>
+                <% if (isRider) { %>
+                  <!-- Rider may want to retry or view details: show Pay button which opens modal -->
+                  <button class="pay-btn" data-booking-id="<%= booking._id %>" style="margin-left:8px">💳 PAY</button>
+                  <a href="/receipt/<%= booking._id %>" style="margin-left:10px; font-weight:600; color:#1976d2; text-decoration:none">View receipt</a>
+                <% } else if (isDriver) { %>
+                  <a href="/receipt/<%= booking._id %>" style="margin-left:10px; font-weight:600; color:#1976d2; text-decoration:none">View receipt</a>
+                  <button class="cancel-btn capture-btn" data-booking-id="<%= booking._id %>" style="background: linear-gradient(135deg,#43a047,#2e7d32); margin-left:8px">Capture</button>
+                <% } else { %>
+                  <a href="/receipt/<%= booking._id %>" style="margin-left:10px; font-weight:600; color:#1976d2; text-decoration:none">View receipt</a>
+                <% } %>
+              <% } else if (ps === 'succeeded' || ps === 'captured' || ps === 'paid') { %>
+                <div style="margin-left:12px; font-weight:600; color:#2e7d32">Payment: Paid</div>
+                <a href="/receipt/<%= booking._id %>" style="margin-left:10px; font-weight:600; color:#1976d2; text-decoration:none">View receipt</a>
+              <% } else { %>
+                <div style="margin-left:12px; font-weight:600">Payment: <%= ps %></div>
+              <% } %>
             </li>
           <% }) %>
         </ul>
       <% } %>
     </div>
   </div>
+  <!-- Stripe payment modal -->
+  <div id="payment-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:2000">
+    <div style="background:white; width:520px; max-width:95%; padding:18px; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+      <h3 style="margin-bottom:6px">Payment & Details</h3>
+      <div style="margin-bottom:8px">
+        <label style="font-weight:600; display:block; margin-bottom:6px">Name</label>
+        <input id="payer-name" type="text" placeholder="Full name" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd" />
+      </div>
+      <div style="margin-bottom:8px">
+        <label style="font-weight:600; display:block; margin-bottom:6px">Address</label>
+        <input id="payer-address" type="text" placeholder="Address or note" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd" />
+      </div>
+      <div style="margin-bottom:8px">
+        <label style="font-weight:600; display:block; margin-bottom:6px">Car / Note (optional)</label>
+        <input id="car-details" type="text" placeholder="Car model or pickup note" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd" />
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label style="font-weight:600; display:block; margin-bottom:6px">Payment method</label>
+        <div style="display:flex; gap:12px">
+          <label style="display:flex; align-items:center; gap:6px;"><input type="radio" name="payopt" value="card" checked /> Card</label>
+          <label style="display:flex; align-items:center; gap:6px;"><input type="radio" name="payopt" value="gpay" /> GPay</label>
+          <label style="display:flex; align-items:center; gap:6px;"><input type="radio" name="payopt" value="cash" /> Cash</label>
+        </div>
+      </div>
+
+      <div id="card-section" style="margin-bottom:8px">
+        <label style="font-weight:600; display:block; margin-bottom:6px">Card</label>
+        <div id="card-element" style="margin:6px 0;"></div>
+        <div id="card-errors" style="color:#c62828; min-height:18px"></div>
+      </div>
+
+      <div id="gpay-section" style="margin-bottom:8px; display:none">
+        <label style="font-weight:600; display:block; margin-bottom:6px">UPI ID (for GPay)</label>
+        <input id="upi-id" type="text" placeholder="your-vpa@bank" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd" />
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:6px">
+        <button id="close-modal" class="cancel-btn" style="background:#9e9e9e">Close</button>
+        <button id="confirm-pay" class="pay-btn">💳 PAY</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://js.stripe.com/v3/"></script>
+  <script>
+    const STRIPE_PUBLISHABLE_KEY = '<%= stripePublishableKey || '' %>';
+    let stripe = null;
+    let card = null;
+    let currentBookingId = null;
+
+    function openModal() { document.getElementById('payment-modal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('payment-modal').style.display = 'none'; }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // toggle UI sections when payment option changed
+      document.querySelectorAll('input[name="payopt"]').forEach(r => {
+        r.addEventListener('change', () => {
+          const val = document.querySelector('input[name="payopt"]:checked').value;
+          const gpaySection = document.getElementById('gpay-section');
+          const cardSection = document.getElementById('card-section');
+          if (val === 'gpay') { if (cardSection) cardSection.style.display = 'none'; if (gpaySection) gpaySection.style.display = 'block'; }
+          else if (val === 'cash') { if (cardSection) cardSection.style.display = 'none'; if (gpaySection) gpaySection.style.display = 'none'; }
+          else { if (cardSection) cardSection.style.display = 'block'; if (gpaySection) gpaySection.style.display = 'none'; }
+        });
+      });
+
+      document.querySelectorAll('.pay-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          currentBookingId = btn.getAttribute('data-booking-id');
+          // store bookingId on confirm button as a fallback so confirm handler always has it
+          const confirmBtn = document.getElementById('confirm-pay');
+          if (confirmBtn) confirmBtn.setAttribute('data-booking-id', currentBookingId || '');
+          openModal();
+        });
+      });
+
+      document.getElementById('confirm-pay').addEventListener('click', async (e) => {
+        e.preventDefault();
+        const payerName = document.getElementById('payer-name').value || '';
+        const payerAddress = document.getElementById('payer-address').value || '';
+        const carDetails = document.getElementById('car-details').value || '';
+        const paymentOption = document.querySelector('input[name="payopt"]:checked').value;
+        const upiId = document.getElementById('upi-id') ? document.getElementById('upi-id').value : '';
+
+        try {
+          // bookingId may be stored on the confirm button as fallback
+          const confirmBtn = document.getElementById('confirm-pay');
+          const bookingId = currentBookingId || (confirmBtn && confirmBtn.getAttribute('data-booking-id')) || null;
+          if (!bookingId) return alert('Booking ID missing. Please re-open the payment dialog and try again.');
+
+          if (paymentOption === 'card') {
+            // create payment intent with payer info
+            const resp = await fetch(`/api/bookings/${bookingId}/create-payment-intent`, {
+              method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ payerName, payerAddress, carDetails, paymentOption })
+            });
+            let data;
+            try { data = await resp.json(); }
+            catch (parseErr) {
+              const txt = await resp.text().catch(()=>null);
+              return alert('Failed to create payment intent: ' + (txt || parseErr.message || 'Invalid response'));
+            }
+            if (!data.success) return alert('Failed to create payment intent: ' + (data.error || data.message || ''));
+            if (data.simulated) { alert('Payment simulated successfully (development mode).'); window.location.reload(); return; }
+            const clientSecret = data.clientSecret;
+
+            if (!STRIPE_PUBLISHABLE_KEY) { alert('Stripe publishable key not configured on server.'); return; }
+            if (!stripe) { stripe = Stripe(STRIPE_PUBLISHABLE_KEY); const elements = stripe.elements(); card = elements.create('card'); card.mount('#card-element'); }
+
+            const result = await stripe.confirmCardPayment(clientSecret, { payment_method: { card } });
+            if (result.error) { document.getElementById('card-errors').textContent = result.error.message || 'Payment error'; return; }
+            if (result.paymentIntent && (result.paymentIntent.status === 'requires_capture' || result.paymentIntent.status === 'succeeded')) {
+              alert('Payment authorized. Driver will capture payment when ride completes.');
+              closeModal();
+              window.location.reload();
+            } else {
+              document.getElementById('card-errors').textContent = 'Unexpected payment status: ' + (result.paymentIntent && result.paymentIntent.status);
+            }
+          } else {
+            // gpay or cash -> call simulate endpoint which now handles both
+            const body = { payerName, payerAddress, carDetails, paymentOption };
+            if (paymentOption === 'gpay') body.upiId = upiId;
+            const gresp = await fetch(`/api/bookings/${bookingId}/simulate-gpay`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            let gdata;
+            try { gdata = await gresp.json(); }
+            catch (parseErr) {
+              const txt = await gresp.text().catch(()=>null);
+              return alert('Payment simulation failed: ' + (txt || parseErr.message || 'Invalid response'));
+            }
+            if (!gdata.success) return alert((gdata.error || gdata.message) || 'Payment simulation failed');
+            alert(paymentOption === 'gpay' ? 'GPay simulated payment successful' : 'Cash payment selected; driver will collect on pickup.');
+            closeModal();
+            window.location.reload();
+          }
+        } catch (err) {
+          alert('Error processing payment: ' + (err && err.message ? err.message : err));
+        }
+      });
+
+      document.getElementById('close-modal').addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
+    });
+
+    // capture button handler (driver UI)
+    document.addEventListener('click', async (e) => {
+      if (e.target && e.target.classList && e.target.classList.contains('capture-btn')) {
+        const bookingId = e.target.getAttribute('data-booking-id');
+        if (!confirm('Capture payment for this booking? This action cannot be undone.')) return;
+        try {
+          const resp = await fetch(`/api/bookings/${bookingId}/capture-payment`, { method: 'POST', credentials: 'include' });
+          let data;
+          try { data = await resp.json(); }
+          catch(parseErr) { const txt = await resp.text().catch(()=>null); return alert('Failed to capture payment: ' + (txt || parseErr.message || 'Invalid response')); }
+          if (!data.success) return alert('Failed to capture payment: ' + (data.message || data.error || ''));
+          alert('Payment captured successfully');
+          window.location.reload();
+        } catch (err) {
+          alert('Error capturing payment: ' + (err && err.message ? err.message : err));
+        }
+      }
+    });
+  </script>
 </body>
 </html>

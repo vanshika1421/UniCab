@@ -42,7 +42,7 @@ io.on('connection', (socket) => {
 });
 
 // Subscribe to pubsub channels from API
-sub.subscribe('booking.created', 'ride.updated', 'notification.sent', (err, count) => {
+sub.subscribe('booking.created', 'ride.updated', 'notification.sent', 'payment.captured', (err, count) => {
   if (err) {
     console.error('Failed to subscribe: ', err.message);
   } else {
