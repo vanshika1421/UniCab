@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index.js",
     "start:ws": "node ws-service/index.js",
-    "start:worker": "node workers/notificationWorker.js"
+    "start:worker": "node workers/notificationWorker.js",
+    "test:notify": "node scripts/sendTestNotification.js"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +31,8 @@
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "ws": "^8.18.3"
+    ,
+    "nodemailer": "^6.9.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
