@@ -7,20 +7,26 @@ const config = require('../config/default');
 // Register a new user
 exports.register = async (req, res) => {
 	try {
-		const { username, email, password, role, driverName, contact } = req.body;
+		let { username, email, password, role, driverName, contact } = req.body;
+
+		// Basic sanitization
+		username = username && String(username).trim();
+		email = email && String(email).trim();
+		role = role && String(role).trim();
 
 		// Debug log
 		console.log('🔍 Registration attempt:', { username, email, role, driverName, contact });
 
 		if (!username || !password || !role) {
 			console.log('❌ Missing required fields');
-			return res.render('register', { error: 'All fields required' });
+			return res.render('register', { error: 'Username, password and role are required' });
 		}
 
-		// Check if username or email already exists (case-insensitive)
-		console.log('🔍 Checking if username/email exists:', username, email);
+		// Normalize for checks
 		const orChecks = [ { username: { $regex: new RegExp(`^${username}$`, 'i') } } ];
 		if (email) orChecks.push({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
+
+		console.log('🔍 Checking if username/email exists:', username, email);
 		const existing = await User.findOne({ $or: orChecks });
 		console.log('🔍 User exists?', existing ? 'YES' : 'NO');
 
@@ -58,8 +64,17 @@ exports.register = async (req, res) => {
 
 		res.redirect('/');
 	} catch (error) {
-		console.error('Registration error:', error);
-		res.render('register', { error: 'Registration failed. Please try again.' });
+		// Log full stack for debugging
+		console.error('Registration error:', error && error.stack ? error.stack : error);
+
+		// Handle duplicate key error explicitly
+		if (error && error.code === 11000) {
+			return res.render('register', { error: 'Username or email already exists' });
+		}
+
+		// In development show the underlying error message to help debugging
+		const devMsg = (process.env.NODE_ENV !== 'production' && error && error.message) ? error.message : 'Registration failed. Please try again.';
+		return res.render('register', { error: devMsg });
 	}
 };
 

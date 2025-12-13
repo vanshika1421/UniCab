@@ -21,10 +21,17 @@ io.adapter(createAdapter(pub, sub));
 console.log("Socket.IO Redis adapter initialized");
 
 // Channels
-sub.subscribe("booking.created");
-sub.subscribe("ride.updated");
-sub.subscribe("notification.sent");
-sub.subscribe("payment.captured");
+(async () => {
+  try {
+    await sub.subscribe("booking.created");
+    await sub.subscribe("ride.updated");
+    await sub.subscribe("notification.sent");
+    await sub.subscribe("payment.captured");
+    console.log('[ws-service] subscribed to channels');
+  } catch (err) {
+    console.error('[ws-service] failed to subscribe to redis channels:', err && err.message ? err.message : err);
+  }
+})();
 
 sub.on("message", (channel, message) => {
   try {

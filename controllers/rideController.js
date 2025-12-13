@@ -95,15 +95,24 @@ exports.addRide = async (req, res) => {
     }
 
     const userId = req.user.id;
-    const ride = new Ride({
-      from, to, time,
-      seats: parseInt(seats,10),
-      price: parseFloat(price),
-      driver: userId,
-      driverName,
-      contact,
-      fromLat, fromLng, toLat, toLng
-    });
+		// Parse time into a Date and ensure it's in the future
+		const parsedTime = new Date(time);
+		if (Number.isNaN(parsedTime.getTime())) {
+			return res.status(400).send('Invalid time format');
+		}
+		if (parsedTime <= new Date()) {
+			return res.status(400).send('Ride time must be in the future');
+		}
+
+		const ride = new Ride({
+			from, to, time: parsedTime,
+			seats: parseInt(seats,10),
+			price: parseFloat(price),
+			driver: userId,
+			driverName,
+			contact,
+			fromLat, fromLng, toLat, toLng
+		});
     await ride.save();
     res.redirect('/');
   } catch(err) {

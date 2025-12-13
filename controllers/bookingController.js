@@ -53,6 +53,20 @@ exports.bookRide = async (req, res) => {
 			return res.status(400).send('Ride not found');
 		}
 
+			// Prevent booking rides that have already departed
+			try {
+				const rideTime = ride.time instanceof Date ? ride.time : new Date(ride.time);
+				if (!rideTime || Number.isNaN(rideTime.getTime())) {
+					// If ride time isn't a valid date, be conservative and reject booking
+					return res.status(400).send('Invalid ride time');
+				}
+				if (rideTime <= new Date()) {
+					return res.status(400).send('Cannot book a ride in the past');
+				}
+			} catch (e) {
+				return res.status(400).send('Invalid ride time');
+			}
+
 		// Determine how many seats the user requested (default 1)
 		const requestedSeats = req.body && req.body.seats ? parseInt(req.body.seats, 10) : (req.query && req.query.seats ? parseInt(req.query.seats, 10) : 1);
 		const seatsToBook = (!isNaN(requestedSeats) && requestedSeats > 0) ? requestedSeats : 1;

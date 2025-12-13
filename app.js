@@ -10,13 +10,21 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const config = require('./config/default');
 
-// Connect to MongoDB
-mongoose.connect(config.mongoURI)
+// Make Mongoose fail-fast when the server cannot reach MongoDB
+mongoose.set('bufferCommands', false);
+
+// Connect to MongoDB with sensible timeouts so requests fail quickly when DB is down
+mongoose.connect(config.mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000, // stop trying to send operations after 5s
+  connectTimeoutMS: 10000
+})
   .then(() => {
     console.log('Connected to MongoDB:', config.mongoURI);
   })
   .catch((err) => {
-    console.error('MongoDB connection error:', err);
+    console.error('MongoDB connection error:', err && err.stack ? err.stack : err);
   });
 
 app.use(express.urlencoded({ extended: true }));
@@ -24,6 +32,20 @@ app.use(express.json());
 app.use(cookieParser());
 // Serve static assets from /public (CSS, client JS, images)
 app.use(express.static(path.join(__dirname, 'public')));
+// Fail-fast middleware: if DB isn't ready, return 503 quickly to avoid long timeouts
+app.use((req, res, next) => {
+  // allow static assets to be served even when DB is down
+  if (req.url.startsWith('/css') || req.url.startsWith('/js') || req.url.startsWith('/images') || req.url.startsWith('/public')) {
+    return next();
+  }
+
+  if (mongoose.connection.readyState !== 1) {
+    console.warn('DB not ready (state=' + mongoose.connection.readyState + '). Returning 503 for', req.method, req.url);
+    return res.status(503).send('Service temporarily unavailable — database is initializing');
+  }
+
+  next();
+});
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
