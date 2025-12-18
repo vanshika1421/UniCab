@@ -4,7 +4,7 @@
   "description": "This project is a Node.js + Express backend for a campus carpooling/ride-sharing system. It features MongoDB for data storage, JWT authentication, WebSocket for live ride updates, and role-based access (driver, rider).",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand",
+    "test": "set NODE_ENV=test&& jest --runInBand",
     "dev": "nodemon index.js",
     "start:ws": "node ws-service/index.js",
     "start:worker": "node workers/notificationWorker.js",
@@ -40,6 +40,7 @@
     "nodemon": "^3.1.10",
     "jest": "^29.7.0",
     "supertest": "^6.3.3",
-    "mongodb-memory-server": "^8.12.1"
+    "mongodb-memory-server": "^8.12.1",
+    "ioredis-mock": "^8.9.0"
   }
 }

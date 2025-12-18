@@ -13,19 +13,21 @@ const config = require('./config/default');
 // Make Mongoose fail-fast when the server cannot reach MongoDB
 mongoose.set('bufferCommands', false);
 
-// Connect to MongoDB with sensible timeouts so requests fail quickly when DB is down
-mongoose.connect(config.mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000, // stop trying to send operations after 5s
-  connectTimeoutMS: 10000
-})
-  .then(() => {
-    console.log('Connected to MongoDB:', config.mongoURI);
+// Connect to MongoDB only if not in test mode (tests handle their own connection)
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(config.mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000, // stop trying to send operations after 5s
+    connectTimeoutMS: 10000
   })
-  .catch((err) => {
-    console.error('MongoDB connection error:', err && err.stack ? err.stack : err);
-  });
+    .then(() => {
+      console.log('Connected to MongoDB:', config.mongoURI);
+    })
+    .catch((err) => {
+      console.error('MongoDB connection error:', err && err.stack ? err.stack : err);
+    });
+}
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -112,16 +114,22 @@ process.on('unhandledRejection', (reason, promise) => {
   // Don't exit the process in development
 });
 
-const PORT = config.port;
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Ride app running on port ${PORT}`);
-  console.log(`🌐 Visit: http://localhost:${PORT}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    console.log('✅ Process terminated');
+// Only start server if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = config.port;
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Ride app running on port ${PORT}`);
+    console.log(`🌐 Visit: http://localhost:${PORT}`);
   });
-});
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('🛑 SIGTERM received. Shutting down gracefully...');
+    server.close(() => {
+      console.log('✅ Process terminated');
+    });
+  });
+}
+
+// Export app for testing
+module.exports = app;

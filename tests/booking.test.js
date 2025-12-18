@@ -28,6 +28,11 @@ beforeAll(async () => {
 afterAll(async () => {
   await mongoose.disconnect();
   await mongoServer.stop();
+  // Close Redis clients to prevent Jest hanging
+  const { client, pub, sub } = require('../lib/redisClient');
+  await client.quit();
+  await pub.quit();
+  await sub.quit();
 });
 
 afterEach(async () => {
